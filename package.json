@@ -1,12 +1,30 @@
 {
-  "name": "sim-idx",
+  "name": "@duneanalytics/hooks",
   "version": "0.0.1",
+  "description": "A TypeScript library for writing Sim IDX apps",
   "private": false,
+  "license": "MIT",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
   ],
+  "keywords": [
+    "sim-idx"
+  ],
+  "author": {
+    "name": "Dune",
+    "url": "https://dune.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/duneanalytics/sim-idx-ts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/duneanalytics/sim-idx-ts/issues"
+  },
+  "homepage": "https://github.com/duneanalytics/sim-idx-ts#readme",
   "peerDependencies": {
     "drizzle-orm": ">=0.44.0"
   },
@@ -23,6 +41,7 @@
   },
   "scripts": {
     "build": "rm -rf dist && tsup src/index.ts",
+    "prepublishOnly": "npm run build",
     "fix:prettier": "prettier --write src"
   }
 }

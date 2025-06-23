@@ -1,25 +1,24 @@
 {
 	"compilerOptions": {
-		/* Base Options: */
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "Bundler",
+		"declaration": true,
+		"outDir": "./dist",
+		"rootDir": "./src",
+		"strict": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"target": "es2022",
-		"verbatimModuleSyntax": false,
-		"allowJs": true,
-		"resolveJsonModule": true,
-		"moduleDetection": "force",
-		/* Strictness */
-		"noImplicitAny": false,
+		"noImplicitAny": true,
 		"noImplicitThis": true,
-		"strictNullChecks": false,
-		"strict": true,
+		"strictNullChecks": true,
 		"noUncheckedIndexedAccess": true,
-		/* If NOT transpiling with TypeScript: */
-		"moduleResolution": "Bundler",
-		"module": "es2022",
-		"noEmit": true,
-		"lib": ["es2022"],
+		"forceConsistentCasingInFileNames": true,
+		"resolveJsonModule": true,
+		"lib": ["ES2022"],
+		"allowImportingTsExtensions": false,
+		"noEmit": false
 	},
-	"exclude": ["node_modules", "dist", "tests"],
-	"include": ["src"]
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist"]
 }

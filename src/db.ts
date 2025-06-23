@@ -24,12 +24,10 @@ export const client = <
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
 
-	if (!dbClient) {
-		if (c.env.HYPERDRIVE?.connectionString) {
-			dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
-		} else {
-			dbClient = drizzleNeon(c.env.DB_CONNECTION_STRING);
-		}
+	if (c.env.HYPERDRIVE?.connectionString) {
+		dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
+	} else {
+		dbClient = drizzleNeon(c.env.DB_CONNECTION_STRING);
 	}
 
 	return dbClient;

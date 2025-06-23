@@ -7,4 +7,10 @@ export default defineConfig({
     dts: true,
     platform: 'node',
     clean: true,
+    format: ['cjs', 'esm'],
+    outExtension({ format }) {
+        return {
+            js: format === 'esm' ? '.mjs' : '.js',
+        }
+    },
 })
