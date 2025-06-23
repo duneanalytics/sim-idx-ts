@@ -7,7 +7,7 @@
   "files": [
     "dist"
   ],
-  "dependencies": {
+  "peerDependencies": {
     "drizzle-orm": "^0.44.1",
     "hono": "^4.8.2"
   },
