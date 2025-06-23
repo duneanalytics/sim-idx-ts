@@ -19,8 +19,7 @@ import { App, db, types } from 'sim-idx';
 ## Requirements
 
 This library requires the following peer dependencies:
-- `drizzle-orm` ^0.44.1
-- `hono` ^4.8.2
+- `drizzle-orm` >=0.44.0
 
 ## Development
 
