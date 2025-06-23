@@ -12,7 +12,8 @@ export const client = <
 				connectionString: string;
 			};
 			DB_CONNECTION_STRING?: string;
-		}>;
+		}> &
+			Record<string, any>;
 	},
 >(
 	c: Context<T>,

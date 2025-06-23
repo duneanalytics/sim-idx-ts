@@ -46,7 +46,7 @@ declare const client: <T extends {
             connectionString: string;
         };
         DB_CONNECTION_STRING?: string;
-    }>;
+    }> & Record<string, any>;
 }>(c: Context<T>) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
     $client: _neondatabase_serverless.NeonQueryFunction<any, any>;
 }) | (drizzle_orm_node_postgres.NodePgDatabase<Record<string, unknown>> & {
