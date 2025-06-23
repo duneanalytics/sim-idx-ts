@@ -1,30 +1,8 @@
-"use strict";
 var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/index.ts
-var index_exports = {};
-__export(index_exports, {
-  App: () => app_exports,
-  db: () => db_exports,
-  types: () => types_exports
-});
-module.exports = __toCommonJS(index_exports);
 
 // src/db.ts
 var db_exports = {};
@@ -108,9 +86,9 @@ __export(db_exports, {
   uint88: () => uint88,
   uint96: () => uint96
 });
-var import_pg_core = require("drizzle-orm/pg-core");
-var import_neon_http = require("drizzle-orm/neon-http");
-var import_node_postgres = require("drizzle-orm/node-postgres");
+import { customType } from "drizzle-orm/pg-core";
+import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
+import { drizzle as drizzlePostgres } from "drizzle-orm/node-postgres";
 
 // src/types.ts
 var types_exports = {};
@@ -176,13 +154,13 @@ var client = (c) => {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
   if (c.env.HYPERDRIVE?.connectionString) {
-    dbClient = (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString);
+    dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
   } else {
-    dbClient = (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING);
+    dbClient = drizzleNeon(c.env.DB_CONNECTION_STRING);
   }
   return dbClient;
 };
-var address = (0, import_pg_core.customType)({
+var address = customType({
   dataType() {
     return "bytea";
   },
@@ -196,7 +174,7 @@ var address = (0, import_pg_core.customType)({
     return new Address(value);
   }
 });
-var internalBytes = (width) => (0, import_pg_core.customType)({
+var internalBytes = (width) => customType({
   dataType() {
     return "bytea";
   },
@@ -243,7 +221,7 @@ var bytes29 = internalBytes(29);
 var bytes30 = internalBytes(30);
 var bytes31 = internalBytes(31);
 var bytes32 = internalBytes(32);
-var uint = (width) => (0, import_pg_core.customType)({
+var uint = (width) => customType({
   dataType() {
     return "numeric";
   },
@@ -278,7 +256,7 @@ var uint144 = uint(144);
 var uint152 = uint(152);
 var uint160 = uint(160);
 var uint256 = uint(256);
-var int = (width) => (0, import_pg_core.customType)({
+var int = (width) => customType({
   dataType() {
     return "numeric";
   },
@@ -313,7 +291,7 @@ var int144 = int(144);
 var int152 = int(152);
 var int160 = int(160);
 var int256 = int(256);
-var struct = (name) => (0, import_pg_core.customType)({
+var struct = (name) => customType({
   dataType() {
     return "jsonb";
   },
@@ -327,14 +305,13 @@ var app_exports = {};
 __export(app_exports, {
   create: () => create
 });
-var import_hono = require("hono");
+import { Hono } from "hono";
 var create = () => {
-  return new import_hono.Hono();
+  return new Hono();
 };
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  App,
-  db,
-  types
-});
-//# sourceMappingURL=index.js.map
+export {
+  app_exports as App,
+  db_exports as db,
+  types_exports as types
+};
+//# sourceMappingURL=index.mjs.map
