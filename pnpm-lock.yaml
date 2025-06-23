@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       drizzle-orm:
-        specifier: ^0.44.1
+        specifier: '>=0.44.0'
         version: 0.44.2(pg@8.16.2)
       hono:
         specifier: ^4.8.2
