@@ -1,37 +1,69 @@
 // TODO: Extract to library
+import { customType } from 'drizzle-orm/pg-core';
+import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
+import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
+import { Address, Uint, Int, Bytes } from './types';
+import { Context } from 'hono';
 
-import { customType } from "drizzle-orm/pg-core";
-import {Address, Uint, Int, Bytes} from "./types";
+export const client = <
+	T extends {
+		Bindings: Partial<{
+			HYPERDRIVE?: {
+				connectionString: string;
+			};
+			DB_CONNECTION_STRING?: string;
+		}>;
+	},
+>(
+	c: Context<T>,
+) => {
+	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
+
+	if (!c.env.DB_CONNECTION_STRING) {
+		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
+	}
+
+	if (!dbClient) {
+		if (c.env.HYPERDRIVE?.connectionString) {
+			dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
+		} else {
+			dbClient = drizzleNeon(c.env.DB_CONNECTION_STRING);
+		}
+	}
+
+	return dbClient;
+};
 
 export const address = customType<{ data: Address; notNull: false; default: false }>({
-    dataType() {
-        return "bytea";
-    },
-    toDriver(value) {
-        return value.address;
-    },
-    fromDriver(value: unknown) {
-        if (!(value instanceof Buffer)) {
-            throw new Error("Expected Buffer for bytea type");
-        }
-        return new Address(value);
-    }
+	dataType() {
+		return 'bytea';
+	},
+	toDriver(value) {
+		return value.address;
+	},
+	fromDriver(value: unknown) {
+		if (!(value instanceof Buffer)) {
+			throw new Error('Expected Buffer for bytea type');
+		}
+		return new Address(value);
+	},
 });
 
-const internalBytes = (width?: number) => customType<{ data: Bytes; notNull: false; default: false }>({
-    dataType() {
-        return "bytea";
-    },
-    toDriver(value) {
-        return value.data.subarray(0, width);
-    },
-    fromDriver(value: unknown) {
-        if (!(value instanceof Buffer)) {
-            throw new Error("Expected Buffer for bytea type");
-        }
-        return new Bytes(value.subarray(0, width));
-    }
-});
+const internalBytes = (width?: number) =>
+	customType<{ data: Bytes; notNull: false; default: false }>({
+		dataType() {
+			return 'bytea';
+		},
+		toDriver(value) {
+			return value.data.subarray(0, width);
+		},
+		fromDriver(value: unknown) {
+			if (!(value instanceof Buffer)) {
+				throw new Error('Expected Buffer for bytea type');
+			}
+			return new Bytes(value.subarray(0, width));
+		},
+	});
 
 export const bytes = internalBytes();
 export const bytes1 = internalBytes(1);
@@ -67,20 +99,22 @@ export const bytes30 = internalBytes(30);
 export const bytes31 = internalBytes(31);
 export const bytes32 = internalBytes(32);
 
-const uint = (width: number) => customType<{ data: Uint; notNull: false; default: false }>({
-    dataType() {
-        return "numeric";
-    },
-    toDriver(value) {
-        return value.value;
-    },
-    fromDriver(value: unknown) {
-        if (typeof value === "string") { // Base 10
-            return new Uint(BigInt(value));
-        }
-        throw new Error("Invalid type for Uint: " + typeof value);
-    }
-});
+const uint = (width: number) =>
+	customType<{ data: Uint; notNull: false; default: false }>({
+		dataType() {
+			return 'numeric';
+		},
+		toDriver(value) {
+			return value.value;
+		},
+		fromDriver(value: unknown) {
+			if (typeof value === 'string') {
+				// Base 10
+				return new Uint(BigInt(value));
+			}
+			throw new Error('Invalid type for Uint: ' + typeof value);
+		},
+	});
 
 export const uint8 = uint(8);
 export const uint16 = uint(16);
@@ -104,20 +138,22 @@ export const uint152 = uint(152);
 export const uint160 = uint(160);
 export const uint256 = uint(256);
 
-const int = (width: number) => customType<{ data: Int; notNull: false; default: false }>({
-    dataType() {
-        return "numeric";
-    },
-    toDriver(value) {
-        return value.value;
-    },
-    fromDriver(value: unknown) {
-        if (typeof value === "string") { // Base 10
-            return new Int(BigInt(value));
-        }
-        throw new Error("Invalid type for Int: " + typeof value);
-    }
-});
+const int = (width: number) =>
+	customType<{ data: Int; notNull: false; default: false }>({
+		dataType() {
+			return 'numeric';
+		},
+		toDriver(value) {
+			return value.value;
+		},
+		fromDriver(value: unknown) {
+			if (typeof value === 'string') {
+				// Base 10
+				return new Int(BigInt(value));
+			}
+			throw new Error('Invalid type for Int: ' + typeof value);
+		},
+	});
 
 export const int8 = int(8);
 export const int16 = int(16);
@@ -131,7 +167,7 @@ export const int72 = int(72);
 export const int80 = int(80);
 export const int88 = int(88);
 export const int96 = int(96);
-export const int104 = int(104); 
+export const int104 = int(104);
 export const int112 = int(112);
 export const int120 = int(120);
 export const int128 = int(128);
@@ -142,11 +178,11 @@ export const int160 = int(160);
 export const int256 = int(256);
 
 export const struct = <TData>(name: string) =>
-    customType<{ data: TData; driverData: string }>({
-        dataType() {
-            return 'jsonb';
-        },
-        toDriver(value: TData): string {
-            return JSON.stringify(value);
-        },
-    })(name);
+	customType<{ data: TData; driverData: string }>({
+		dataType() {
+			return 'jsonb';
+		},
+		toDriver(value: TData): string {
+			return JSON.stringify(value);
+		},
+	})(name);

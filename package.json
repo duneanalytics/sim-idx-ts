@@ -2,17 +2,24 @@
   "name": "sim-idx",
   "version": "0.0.1",
   "private": false,
-  "dependencies": {
-    "drizzle-orm": "^0.44.1"
-  },
-  "devDependencies": {
-    "esbuild": "^0.25.5"
-  },
-  "scripts": {
-    "build": "rm -rf dist && esbuild --bundle src/index.ts --platform=node --outdir=dist --sourcemap"
-  },
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "drizzle-orm": "^0.44.1",
+    "hono": "^4.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "esbuild": "^0.25.5",
+    "prettier": "^3.6.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsup src/index.ts",
+    "fix:prettier": "prettier --write src"
+  }
 }
