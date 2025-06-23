@@ -1,4 +1,5 @@
-import * as simDb from './db';
-import * as simTypes from './types';
+import * as db from './db';
+import * as App from './app';
+import * as types from './types';
 
-export { simDb, simTypes };
+export { App, db, types };
