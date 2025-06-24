@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A TypeScript library for writing Sim IDX apps",
   "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
