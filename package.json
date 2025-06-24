@@ -1,5 +1,5 @@
 {
-  "name": "@duneanalytics/hooks",
+  "name": "@duneanalytics/sim-idx",
   "version": "0.0.1",
   "description": "A TypeScript library for writing Sim IDX apps",
   "private": false,
@@ -35,13 +35,19 @@
   "devDependencies": {
     "@types/node": "^24.0.3",
     "esbuild": "^0.25.5",
+    "eslint": "^9.29.0",
     "prettier": "^3.6.0",
     "tsup": "^8.5.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.35.0"
   },
   "scripts": {
     "build": "rm -rf dist && tsup src/index.ts",
     "prepublishOnly": "npm run build",
+    "lint": "pnpm run '/^lint:.*$/'",
+    "lint:tsc": "tsc --noEmit",
+    "lint:eslint": "eslint src",
+    "lint:prettier": "prettier --check src",
     "fix:prettier": "prettier --write src"
   }
 }
