@@ -1,5 +1,14 @@
 src/
 tsconfig.json
 tsup.config.ts
+vitest.config.ts
 .prettierrc
+.prettierignore
+eslint.config.mjs
+.github/
+.idea/
 node_modules/
+.gitignore
+.nvmrc
+CHANGELOG.md
+README.md

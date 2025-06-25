@@ -1,5 +1,6 @@
 {
 	"compilerOptions": {
+		"types": ["vitest/globals"],
 		"target": "ES2022",
 		"module": "ESNext",
 		"moduleResolution": "Bundler",
@@ -19,6 +20,6 @@
 		"allowImportingTsExtensions": false,
 		"noEmit": false
 	},
-	"include": ["src/**/*"],
+	"include": ["src/**/*","vitest.config.ts"],
 	"exclude": ["node_modules", "dist"]
 }

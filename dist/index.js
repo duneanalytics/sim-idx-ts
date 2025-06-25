@@ -328,8 +328,8 @@ __export(app_exports, {
   create: () => create
 });
 var import_hono = require("hono");
-var create = () => {
-  return new import_hono.Hono();
+var create = (options) => {
+  return new import_hono.Hono(options);
 };
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

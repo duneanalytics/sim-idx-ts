@@ -1,0 +1,40 @@
+name: "Sim IDX CI"
+on:
+  pull_request:
+    types: [opened, synchronize, edited, reopened]
+
+jobs:
+  staticcheck:
+    name: "Run code checks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: './package.json'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "./.nvmrc"
+          cache: "pnpm"
+          cache-dependency-path: "./pnpm-lock.yaml"
+
+      - run: "pnpm install --frozen-lockfile"
+
+      - run: "pnpm lint"
+
+      - run: "pnpm test"
+
+      - name: Build and check for changes
+        run: |
+          pnpm build
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "❌ Build produced changes that are not committed:"
+            git status --porcelain
+            echo "Please commit the build artifacts"
+            exit 1
+          else
+            echo "✅ Build completed without producing uncommitted changes"
+          fi
