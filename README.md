@@ -10,12 +10,6 @@
 
 A TypeScript library for writing Sim IDX apps.
 
-## Features
-
-- 🚀 **Type-safe database operations** with Drizzle ORM
-- 🌐 **API framework integration** with Hono
-- 🎯 **Full TypeScript support** with comprehensive type definitions
-
 ## Installation
 
 ```bash
@@ -113,8 +107,7 @@ git push --tags
 ```bash
 npm publish
 ```
-
-4. Update the [CHANGELOG.md](CHANGELOG.md) with the changes for this version.
+4. Create a new release on GitHub with the same version number.
 
 ## License
 
