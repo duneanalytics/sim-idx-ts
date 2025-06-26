@@ -8,7 +8,8 @@ jobs:
     name: "Run code checks"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout sim-idx-ts
+        uses: actions/checkout@v4
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -38,3 +39,36 @@ jobs:
           else
             echo "✅ Build completed without producing uncommitted changes"
           fi
+
+      - name: Setup Sim IDX
+        run: |
+          echo "Setting up Sim IDX..."
+          curl -L https://simcli.dune.com | bash
+          sim --version
+
+      - name: Checkout sample project
+        uses: actions/checkout@v4
+        with:
+          repository: duneanalytics/sim-idx-example-univ3-lp
+          path: sample_project
+
+      - name: Update sim-idx dependency to current commit
+        run: |
+          # Get the current commit hash
+          COMMIT_HASH=$(git rev-parse HEAD)
+          echo "Current commit hash: $COMMIT_HASH"
+
+          cd apis
+          # Update the package.json to use the current commit hash
+          npm pkg set dependencies.sim-idx="git+https://github.com/duneanalytics/sim-idx-ts#$COMMIT_HASH" # Backward compatibility
+          npm pkg set dependencies.@duneanalytics/sim-idx="git+https://github.com/duneanalytics/sim-idx-ts#$COMMIT_HASH"
+
+          cat package.json
+        working-directory: sample_project
+
+      - name: Build sample project with Sim IDX
+        run: |
+          sim build
+        working-directory: sample_project
+
+
