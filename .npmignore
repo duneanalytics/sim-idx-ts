@@ -1,5 +1,13 @@
 src/
+node_modules/
+coverage
+.github/
+.idea/
 tsconfig.json
 tsup.config.ts
+vitest.config.ts
 .prettierrc
-node_modules/
+.prettierignore
+eslint.config.mjs
+.gitignore
+.nvmrc

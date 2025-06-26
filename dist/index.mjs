@@ -306,8 +306,8 @@ __export(app_exports, {
   create: () => create
 });
 import { Hono } from "hono";
-var create = () => {
-  return new Hono();
+var create = (options) => {
+  return new Hono(options);
 };
 export {
   app_exports as App,
