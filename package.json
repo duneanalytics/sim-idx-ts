@@ -1,6 +1,6 @@
 {
   "name": "@duneanalytics/sim-idx",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A TypeScript library for writing Sim IDX apps",
   "private": false,
   "publishConfig": {

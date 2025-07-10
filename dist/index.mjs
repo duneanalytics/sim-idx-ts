@@ -309,9 +309,29 @@ import { Hono } from "hono";
 var create = (options) => {
   return new Hono(options);
 };
+
+// src/middleware.ts
+var middleware_exports = {};
+__export(middleware_exports, {
+  middlewares: () => middlewares
+});
+var middlewares = {
+  authentication: async (c, next) => {
+    const disableAuthentication = c.env?.DISABLE_AUTHENTICATION;
+    if (disableAuthentication === "true") {
+      return await next();
+    }
+    const authHeader = c.req.header("X-IDX-AUTHENTICATED-API-KEY-NAME");
+    if (!authHeader) {
+      return Response.json({ unauthenticated: true }, { status: 401 });
+    }
+    return await next();
+  }
+};
 export {
   app_exports as App,
   db_exports as db,
+  middleware_exports as middleware,
   types_exports as types
 };
 //# sourceMappingURL=index.mjs.map

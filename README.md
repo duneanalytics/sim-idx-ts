@@ -60,11 +60,25 @@ const balance = uint256('balance');
 const signedValue = int256('signed_value');
 ```
 
+## Middleware
+
+The library provides a middleware for authentication.
+
+It is based on the `X-IDX-AUTHENTICATED-API-KEY-NAME` header that is automatically set when valid `api_key` query parameter or `Authorization` header is present.
+
+```typescript
+import { create, middleware } from '@duneanalytics/sim-idx';
+
+const app = create();
+app.use('*', middleware.authentication);
+```
+
 ## Environment Variables
 
 The library expects these environment variables:
 
 - `DB_CONNECTION_STRING`: Your database connection string
+- `DISABLE_AUTHENTICATION`: Set to `true` to disable middleware authentication. Useful for local development.
 
 ## Development
 
