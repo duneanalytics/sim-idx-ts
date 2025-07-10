@@ -67,9 +67,9 @@ The library provides a middleware for authentication.
 It is based on the `X-IDX-AUTHENTICATED-API-KEY-NAME` header that is automatically set when valid `api_key` query parameter or `Authorization` header is present.
 
 ```typescript
-import { create, middlewares } from '@duneanalytics/sim-idx';
+import { App, middlewares } from '@duneanalytics/sim-idx';
 
-const app = create();
+const app = App.create();
 app.use('*', middlewares.authentication);
 ```
 
