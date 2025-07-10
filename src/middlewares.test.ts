@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Context } from 'hono';
-import { middlewares } from './middleware';
+import { middlewares } from './middlewares';
 
 describe('Authentication Middleware', () => {
 	it('should call next() when authentication is disabled', async () => {

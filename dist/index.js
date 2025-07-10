@@ -22,7 +22,7 @@ var index_exports = {};
 __export(index_exports, {
   App: () => app_exports,
   db: () => db_exports,
-  middleware: () => middleware_exports,
+  middleware: () => middlewares_exports,
   types: () => types_exports
 });
 module.exports = __toCommonJS(index_exports);
@@ -333,9 +333,9 @@ var create = (options) => {
   return new import_hono.Hono(options);
 };
 
-// src/middleware.ts
-var middleware_exports = {};
-__export(middleware_exports, {
+// src/middlewares.ts
+var middlewares_exports = {};
+__export(middlewares_exports, {
   middlewares: () => middlewares
 });
 var middlewares = {

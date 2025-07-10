@@ -310,9 +310,9 @@ var create = (options) => {
   return new Hono(options);
 };
 
-// src/middleware.ts
-var middleware_exports = {};
-__export(middleware_exports, {
+// src/middlewares.ts
+var middlewares_exports = {};
+__export(middlewares_exports, {
   middlewares: () => middlewares
 });
 var middlewares = {
@@ -331,7 +331,7 @@ var middlewares = {
 export {
   app_exports as App,
   db_exports as db,
-  middleware_exports as middleware,
+  middlewares_exports as middleware,
   types_exports as types
 };
 //# sourceMappingURL=index.mjs.map
