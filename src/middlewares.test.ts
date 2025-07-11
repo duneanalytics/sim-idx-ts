@@ -5,10 +5,26 @@ import { authentication } from './middlewares';
 const authHeaderName = 'X-IDX-AUTHENTICATED-API-KEY-NAME';
 
 describe('Authentication Middleware', () => {
-	it('should call next() when authentication is disabled', async () => {
+	it('should call next() when NODE_ENV is not production', async () => {
 		const mockNext = vi.fn().mockResolvedValue(undefined);
 		const mockContext = {
-			env: { DISABLE_AUTHENTICATION: 'true' },
+			env: { NODE_ENV: 'development' },
+			req: {
+				header: vi.fn().mockImplementation(() => {
+					return undefined;
+				}),
+			},
+		} as unknown as Context;
+
+		await authentication(mockContext, mockNext);
+
+		expect(mockNext).toHaveBeenCalledTimes(1);
+	});
+
+	it('should call next() when NODE_ENV is not set', async () => {
+		const mockNext = vi.fn().mockResolvedValue(undefined);
+		const mockContext = {
+			env: {},
 			req: {
 				header: vi.fn().mockImplementation(() => {
 					return undefined;
@@ -24,6 +40,7 @@ describe('Authentication Middleware', () => {
 	it('should return 401 when authentication header is missing', async () => {
 		const mockNext = vi.fn().mockResolvedValue(undefined);
 		const mockContext = {
+			env: { NODE_ENV: 'production' },
 			req: {
 				header: vi.fn().mockReturnValue(undefined),
 			},
@@ -42,6 +59,7 @@ describe('Authentication Middleware', () => {
 	it('should call next() when authentication header is present', async () => {
 		const mockNext = vi.fn().mockResolvedValue(undefined);
 		const mockContext = {
+			env: { NODE_ENV: 'production' },
 			req: {
 				header: vi.fn().mockImplementation((headerName: string) => {
 					if (headerName === authHeaderName) {

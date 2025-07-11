@@ -340,8 +340,8 @@ __export(middlewares_exports, {
 });
 var authHeaderName = "X-IDX-AUTHENTICATED-API-KEY-NAME";
 var authentication = async (c, next) => {
-  const disableAuthentication = c.env?.DISABLE_AUTHENTICATION;
-  if (disableAuthentication === "true") {
+  const isProduction = c.env?.NODE_ENV === "production";
+  if (!isProduction) {
     return await next();
   }
   const authHeader = c.req.header(authHeaderName);
