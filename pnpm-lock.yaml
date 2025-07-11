@@ -21,6 +21,9 @@ importers:
         specifier: ^8.16.2
         version: 8.16.2
     devDependencies:
+      '@cloudflare/workers-types':
+        specifier: ^4.20250711.0
+        version: 4.20250711.0
       '@types/node':
         specifier: ^24.0.3
         version: 24.0.3
@@ -78,6 +81,9 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@cloudflare/workers-types@4.20250711.0':
+    resolution: {integrity: sha512-aocBpm0Mbbz6GIOLJDbPrl4gZZ2o2A1a7pjFWlt3j2T1xghP0h1V3LtWUhyk74bAY5qOEuGQyLgr+svY//yCrQ==}
 
   '@esbuild/aix-ppc64@0.25.5':
     resolution: {integrity: sha512-9o3TMmpmftaCMepOdA5k/yDw8SfInyzWWTjYTFCX3kPSDJMROQTb8jg+h9Cnwnmm1vOzvxN7gIfB5V2ewpjtGA==}
@@ -1575,6 +1581,8 @@ snapshots:
       '@babel/helper-validator-identifier': 7.27.1
 
   '@bcoe/v8-coverage@1.0.2': {}
+
+  '@cloudflare/workers-types@4.20250711.0': {}
 
   '@esbuild/aix-ppc64@0.25.5':
     optional: true

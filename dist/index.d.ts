@@ -2141,4 +2141,15 @@ declare namespace middlewares {
   export { middlewares_authentication as authentication };
 }
 
-export { app as App, db, middlewares, types };
+declare const cache: <T extends {
+    Bindings: Partial<{
+        CACHE_NAME?: string;
+    }> & Record<string, any>;
+}>(c: Context<T>) => Promise<Cache>;
+
+declare const cache$1_cache: typeof cache;
+declare namespace cache$1 {
+  export { cache$1_cache as cache };
+}
+
+export { app as App, cache$1 as cache, db, middlewares, types };

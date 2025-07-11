@@ -21,6 +21,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var index_exports = {};
 __export(index_exports, {
   App: () => app_exports,
+  cache: () => cache_exports,
   db: () => db_exports,
   middlewares: () => middlewares_exports,
   types: () => types_exports
@@ -350,9 +351,22 @@ var authentication = async (c, next) => {
   }
   return await next();
 };
+
+// src/cache.ts
+var cache_exports = {};
+__export(cache_exports, {
+  cache: () => cache
+});
+var cache = (c) => {
+  if (!c.env.CACHE_NAME) {
+    throw new Error("Missing required environment variable: CACHE_NAME");
+  }
+  return caches.open(c.env.CACHE_NAME);
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   App,
+  cache,
   db,
   middlewares,
   types
