@@ -309,8 +309,21 @@ import { Hono } from "hono";
 var create = (options) => {
   return new Hono(options);
 };
+
+// src/cache.ts
+var cache_exports = {};
+__export(cache_exports, {
+  cache: () => cache
+});
+var cache = (c) => {
+  if (!c.env.CACHE_NAME) {
+    throw new Error("Missing required environment variable: CACHE_NAME");
+  }
+  return caches.open(c.env.CACHE_NAME);
+};
 export {
   app_exports as App,
+  cache_exports as cache,
   db_exports as db,
   types_exports as types
 };
