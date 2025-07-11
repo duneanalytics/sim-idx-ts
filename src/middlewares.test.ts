@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Context } from 'hono';
-import { middlewares } from './middlewares';
+import { authentication } from './middlewares';
+
+const authHeaderName = 'X-IDX-AUTHENTICATED-API-KEY-NAME';
 
 describe('Authentication Middleware', () => {
 	it('should call next() when authentication is disabled', async () => {
@@ -8,11 +10,13 @@ describe('Authentication Middleware', () => {
 		const mockContext = {
 			env: { DISABLE_AUTHENTICATION: 'true' },
 			req: {
-				header: vi.fn().mockReturnValue('some-api-key'),
+				header: vi.fn().mockImplementation(() => {
+					return undefined;
+				}),
 			},
 		} as unknown as Context;
 
-		await middlewares.authentication(mockContext, mockNext);
+		await authentication(mockContext, mockNext);
 
 		expect(mockNext).toHaveBeenCalledTimes(1);
 	});
@@ -25,7 +29,7 @@ describe('Authentication Middleware', () => {
 			},
 		} as unknown as Context;
 
-		const result = await middlewares.authentication(mockContext, mockNext);
+		const result = await authentication(mockContext, mockNext);
 
 		expect(result).toBeInstanceOf(Response);
 		expect(result?.status).toBe(401);
@@ -39,11 +43,17 @@ describe('Authentication Middleware', () => {
 		const mockNext = vi.fn().mockResolvedValue(undefined);
 		const mockContext = {
 			req: {
-				header: vi.fn().mockReturnValue('some-api-key'),
+				header: vi.fn().mockImplementation((headerName: string) => {
+					if (headerName === authHeaderName) {
+						return 'some-api-key';
+					}
+
+					return undefined;
+				}),
 			},
 		} as unknown as Context;
 
-		await middlewares.authentication(mockContext, mockNext);
+		await authentication(mockContext, mockNext);
 		expect(mockNext).toHaveBeenCalledTimes(1);
 	});
 });

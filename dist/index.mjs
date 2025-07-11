@@ -313,25 +313,24 @@ var create = (options) => {
 // src/middlewares.ts
 var middlewares_exports = {};
 __export(middlewares_exports, {
-  middlewares: () => middlewares
+  authentication: () => authentication
 });
-var middlewares = {
-  authentication: async (c, next) => {
-    const disableAuthentication = c.env?.DISABLE_AUTHENTICATION;
-    if (disableAuthentication === "true") {
-      return await next();
-    }
-    const authHeader = c.req.header("X-IDX-AUTHENTICATED-API-KEY-NAME");
-    if (!authHeader) {
-      return Response.json({ unauthenticated: true }, { status: 401 });
-    }
+var authHeaderName = "X-IDX-AUTHENTICATED-API-KEY-NAME";
+var authentication = async (c, next) => {
+  const disableAuthentication = c.env?.DISABLE_AUTHENTICATION;
+  if (disableAuthentication === "true") {
     return await next();
   }
+  const authHeader = c.req.header(authHeaderName);
+  if (!authHeader) {
+    return Response.json({ unauthenticated: true }, { status: 401 });
+  }
+  return await next();
 };
 export {
   app_exports as App,
   db_exports as db,
-  middlewares_exports as middleware,
+  middlewares_exports as middlewares,
   types_exports as types
 };
 //# sourceMappingURL=index.mjs.map
