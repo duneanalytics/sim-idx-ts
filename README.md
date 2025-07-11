@@ -74,12 +74,14 @@ const app = App.create();
 app.use('*', middlewares.authentication);
 ```
 
+*Note: In non-production environments, the authentication middleware will be disabled.*
+
 ## Environment Variables
 
 The library expects these environment variables:
 
 - `DB_CONNECTION_STRING`: Your database connection string
-- `DISABLE_AUTHENTICATION`: Set to `true` to disable middleware authentication. Useful for local development.
+- `NODE_ENV`: Set to `production` for production environments.
 
 ## Development
 

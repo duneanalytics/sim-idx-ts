@@ -3,8 +3,8 @@ import { Context } from 'hono';
 const authHeaderName = 'X-IDX-AUTHENTICATED-API-KEY-NAME';
 
 export const authentication = async (c: Context, next: () => Promise<void>): Promise<Response | void> => {
-	const disableAuthentication = c.env?.DISABLE_AUTHENTICATION;
-	if (disableAuthentication === 'true') {
+	const isProduction = c.env?.NODE_ENV === 'production';
+	if (!isProduction) {
 		return await next();
 	}
 
