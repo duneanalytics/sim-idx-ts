@@ -22,6 +22,7 @@ var index_exports = {};
 __export(index_exports, {
   App: () => app_exports,
   db: () => db_exports,
+  middlewares: () => middlewares_exports,
   types: () => types_exports
 });
 module.exports = __toCommonJS(index_exports);
@@ -331,10 +332,29 @@ var import_hono = require("hono");
 var create = (options) => {
   return new import_hono.Hono(options);
 };
+
+// src/middlewares.ts
+var middlewares_exports = {};
+__export(middlewares_exports, {
+  authentication: () => authentication
+});
+var authHeaderName = "X-IDX-AUTHENTICATED-API-KEY-NAME";
+var authentication = async (c, next) => {
+  const disableAuthentication = c.env?.DISABLE_AUTHENTICATION;
+  if (disableAuthentication === "true") {
+    return await next();
+  }
+  const authHeader = c.req.header(authHeaderName);
+  if (!authHeader) {
+    return Response.json({ unauthenticated: true }, { status: 401 });
+  }
+  return await next();
+};
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   App,
   db,
+  middlewares,
   types
 });
 //# sourceMappingURL=index.js.map

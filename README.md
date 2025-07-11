@@ -60,11 +60,26 @@ const balance = uint256('balance');
 const signedValue = int256('signed_value');
 ```
 
+## Middlewares
+
+The library provides a middleware for authentication.
+
+When a valid Sim IDX API key is submitted in the `Authorization` header (please see [the documentation for authentication options](https://docs.sim.dune.com/idx/authentication#api)),
+your API will receive the API key name in the `X-IDX-AUTHENTICATED-API-KEY-NAME` header. The authentication middleware uses this header to decide if a request is authenticated or not.
+
+```typescript
+import { App, middlewares } from '@duneanalytics/sim-idx';
+
+const app = App.create();
+app.use('*', middlewares.authentication);
+```
+
 ## Environment Variables
 
 The library expects these environment variables:
 
 - `DB_CONNECTION_STRING`: Your database connection string
+- `DISABLE_AUTHENTICATION`: Set to `true` to disable middleware authentication. Useful for local development.
 
 ## Development
 

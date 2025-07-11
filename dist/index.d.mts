@@ -2134,4 +2134,11 @@ declare namespace app {
   export { app_create as create };
 }
 
-export { app as App, db, types };
+declare const authentication: (c: Context, next: () => Promise<void>) => Promise<Response | void>;
+
+declare const middlewares_authentication: typeof authentication;
+declare namespace middlewares {
+  export { middlewares_authentication as authentication };
+}
+
+export { app as App, db, middlewares, types };
