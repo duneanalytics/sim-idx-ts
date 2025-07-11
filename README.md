@@ -64,7 +64,8 @@ const signedValue = int256('signed_value');
 
 The library provides a middleware for authentication.
 
-It is based on the `X-IDX-AUTHENTICATED-API-KEY-NAME` header that is automatically set when valid `api_key` query parameter or `Authorization` header is present.
+When a valid Sim IDX API key is submitted in the `Authorization` header (please see [the documentation for authentication options](https://docs.sim.dune.com/idx/authentication#api)),
+your API will receive the API key name in the `X-IDX-AUTHENTICATED-API-KEY-NAME` header. The authentication middleware uses this header to decide if a request is authenticated or not.
 
 ```typescript
 import { App, middlewares } from '@duneanalytics/sim-idx';
