@@ -171,15 +171,28 @@ var Int = class {
 };
 
 // src/db.ts
+var import_pg = require("pg");
 var client = (c) => {
   let dbClient;
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
+  const doLog = c.env.DB_ENABLE_LOGGING == "true" ? true : false;
   if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString);
   } else {
-    dbClient = (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING);
+    if (c.env.DB_SCHEMA) {
+      console.log("Using schema: " + c.env.DB_SCHEMA);
+      const pool = new import_pg.Pool({
+        connectionString: c.env.DB_CONNECTION_STRING
+      });
+      pool.on("connect", (client2) => {
+        client2.query(`SET search_path TO "${c.env.DB_SCHEMA}", public`);
+      });
+      dbClient = (0, import_node_postgres.drizzle)(pool, { logger: doLog });
+    } else {
+      dbClient = (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING, { logger: doLog });
+    }
   }
   return dbClient;
 };

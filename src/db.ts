@@ -1,28 +1,51 @@
 // TODO: Extract to library
-import { customType } from 'drizzle-orm/pg-core';
+import { customType, pgSchema } from 'drizzle-orm/pg-core';
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
 import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
+import { Pool } from "pg";
 
-interface ClientBindings {
-	HYPERDRIVE?: {
-		connectionString: string;
-	};
-	DB_CONNECTION_STRING?: string;
-}
 
-export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | { env: ClientBindings }) => {
+export const client = <
+	T extends {
+		Bindings: Partial<{
+			HYPERDRIVE?: {
+				connectionString: string;
+			};
+			DB_CONNECTION_STRING?: string;
+			DB_SCHEMA?: string;
+			DB_ENABLE_LOGGING?: string;
+		}> &
+		Record<string, any>;
+	},
+>(
+	c: Context<T>,
+) => {
 	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 
 	if (!c.env.DB_CONNECTION_STRING) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
 
+	const doLog = c.env.DB_ENABLE_LOGGING == "true" ? true : false;
+
 	if (c.env.HYPERDRIVE?.connectionString) {
 		dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
 	} else {
-		dbClient = drizzleNeon(c.env.DB_CONNECTION_STRING);
+		if (c.env.DB_SCHEMA) {
+			console.log('Using schema: ' + c.env.DB_SCHEMA);
+			const pool = new Pool({
+				connectionString: c.env.DB_CONNECTION_STRING,
+			});
+			pool.on('connect', (client) => {
+				client.query(`SET search_path TO "${c.env.DB_SCHEMA}", public`);
+			});
+
+			dbClient = drizzlePostgres(pool, { logger: doLog });
+		} else {
+			dbClient = drizzleNeon(c.env.DB_CONNECTION_STRING, { logger: doLog });
+		}
 	}
 
 	return dbClient;
