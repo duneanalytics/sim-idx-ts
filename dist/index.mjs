@@ -154,12 +154,11 @@ var client = (c) => {
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
-  const doLog = c.env.DB_ENABLE_LOGGING == "true" ? true : false;
+  const doLog = c.env.DB_ENABLE_LOGGING === "true" ? true : false;
   if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
   } else {
     if (c.env.DB_SCHEMA) {
-      console.log("Using schema: " + c.env.DB_SCHEMA);
       const pool = new Pool({
         connectionString: c.env.DB_CONNECTION_STRING
       });

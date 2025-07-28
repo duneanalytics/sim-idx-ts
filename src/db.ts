@@ -1,11 +1,10 @@
 // TODO: Extract to library
-import { customType, pgSchema } from 'drizzle-orm/pg-core';
+import { customType } from 'drizzle-orm/pg-core';
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
 import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
-import { Pool } from "pg";
-
+import { Pool } from 'pg';
 
 export const client = <
 	T extends {
@@ -17,7 +16,7 @@ export const client = <
 			DB_SCHEMA?: string;
 			DB_ENABLE_LOGGING?: string;
 		}> &
-		Record<string, any>;
+			Record<string, any>;
 	},
 >(
 	c: Context<T>,
@@ -28,13 +27,12 @@ export const client = <
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
 
-	const doLog = c.env.DB_ENABLE_LOGGING == "true" ? true : false;
+	const doLog = c.env.DB_ENABLE_LOGGING === 'true' ? true : false;
 
 	if (c.env.HYPERDRIVE?.connectionString) {
 		dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
 	} else {
 		if (c.env.DB_SCHEMA) {
-			console.log('Using schema: ' + c.env.DB_SCHEMA);
 			const pool = new Pool({
 				connectionString: c.env.DB_CONNECTION_STRING,
 			});
