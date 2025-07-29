@@ -7,6 +7,28 @@ import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
 import { Pool } from 'pg';
 
+export function extractSearchPathFromConnectionString(connectionString: string): string | null {
+	try {
+		const url = new URL(connectionString);
+		const searchPathParam = url.searchParams.get('options');
+
+		if (!searchPathParam) {
+			return null;
+		}
+
+		const decoded = decodeURIComponent(searchPathParam);
+		const searchPathMatch = decoded.match(/-c\s+search_path=(.+)/i);
+
+		if (searchPathMatch && searchPathMatch[1]) {
+			return searchPathMatch[1];
+		}
+
+		return null;
+	} catch {
+		return null;
+	}
+}
+
 export const client = <
 	T extends {
 		Bindings: Partial<{
@@ -14,7 +36,6 @@ export const client = <
 				connectionString: string;
 			};
 			DB_CONNECTION_STRING?: string;
-			DB_SCHEMA?: string;
 		}> &
 			Record<string, any>;
 	},
@@ -31,12 +52,14 @@ export const client = <
 	if (c.env.HYPERDRIVE?.connectionString) {
 		dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
 	} else {
-		if (c.env.DB_SCHEMA) {
+		const searchPath = extractSearchPathFromConnectionString(c.env.DB_CONNECTION_STRING);
+
+		if (searchPath) {
 			const pool = new Pool({
 				connectionString: c.env.DB_CONNECTION_STRING,
 			});
 			pool.on('connect', (client) => {
-				client.query(`SET search_path TO "${c.env.DB_SCHEMA}", public`);
+				client.query(`SET search_path TO "${searchPath}"`);
 			});
 
 			dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);

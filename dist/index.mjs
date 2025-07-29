@@ -42,6 +42,7 @@ __export(db_exports, {
   bytes8: () => bytes8,
   bytes9: () => bytes9,
   client: () => client,
+  extractSearchPathFromConnectionString: () => extractSearchPathFromConnectionString,
   int104: () => int104,
   int112: () => int112,
   int120: () => int120,
@@ -149,6 +150,23 @@ var Int = class {
 
 // src/db.ts
 import { Pool } from "pg";
+function extractSearchPathFromConnectionString(connectionString) {
+  try {
+    const url = new URL(connectionString);
+    const searchPathParam = url.searchParams.get("options");
+    if (!searchPathParam) {
+      return null;
+    }
+    const decoded = decodeURIComponent(searchPathParam);
+    const searchPathMatch = decoded.match(/-c\s+search_path=(.+)/i);
+    if (searchPathMatch && searchPathMatch[1]) {
+      return searchPathMatch[1];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 var client = (c, config) => {
   let dbClient;
   if (!c.env.DB_CONNECTION_STRING) {
@@ -157,12 +175,13 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
   } else {
-    if (c.env.DB_SCHEMA) {
+    const searchPath = extractSearchPathFromConnectionString(c.env.DB_CONNECTION_STRING);
+    if (searchPath) {
       const pool = new Pool({
         connectionString: c.env.DB_CONNECTION_STRING
       });
       pool.on("connect", (client2) => {
-        client2.query(`SET search_path TO "${c.env.DB_SCHEMA}", public`);
+        client2.query(`SET search_path TO "${searchPath}"`);
       });
       dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
     } else {
