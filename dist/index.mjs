@@ -158,7 +158,7 @@ function extractSearchPathFromConnectionString(connectionString) {
       return null;
     }
     const decoded = decodeURIComponent(searchPathParam);
-    const searchPathMatch = decoded.match(/-c\s+search_path=(.+)/i);
+    const searchPathMatch = decoded.match(/-c\s+search_path=(.+?)(?:\s+-c|\s+|$)/i);
     if (searchPathMatch && searchPathMatch[1]) {
       return searchPathMatch[1];
     }
@@ -181,7 +181,8 @@ var client = (c, config) => {
         connectionString: c.env.DB_CONNECTION_STRING
       });
       pool.on("connect", (client2) => {
-        client2.query(`SET search_path TO "${searchPath}"`);
+        client2.query("SET search_path TO $1", [searchPath]).catch(() => {
+        });
       });
       dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
     } else {

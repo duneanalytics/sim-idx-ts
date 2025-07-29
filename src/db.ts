@@ -17,7 +17,7 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 		}
 
 		const decoded = decodeURIComponent(searchPathParam);
-		const searchPathMatch = decoded.match(/-c\s+search_path=(.+)/i);
+		const searchPathMatch = decoded.match(/-c\s+search_path=(.+?)(?:\s+-c|\s+|$)/i);
 
 		if (searchPathMatch && searchPathMatch[1]) {
 			return searchPathMatch[1];
@@ -59,7 +59,9 @@ export const client = <
 				connectionString: c.env.DB_CONNECTION_STRING,
 			});
 			pool.on('connect', (client) => {
-				client.query(`SET search_path TO "${searchPath}"`);
+				client.query('SET search_path TO $1', [searchPath]).catch(() => {
+					// Silently handle search_path setting errors
+				});
 			});
 
 			dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
