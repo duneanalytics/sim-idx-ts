@@ -172,14 +172,13 @@ var Int = class {
 
 // src/db.ts
 var import_pg = require("pg");
-var client = (c) => {
+var client = (c, config) => {
   let dbClient;
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
-  const doLog = c.env.DB_ENABLE_LOGGING === "true" ? true : false;
   if (c.env.HYPERDRIVE?.connectionString) {
-    dbClient = (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString);
+    dbClient = config ? (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString, config) : (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString);
   } else {
     if (c.env.DB_SCHEMA) {
       const pool = new import_pg.Pool({
@@ -188,9 +187,9 @@ var client = (c) => {
       pool.on("connect", (client2) => {
         client2.query(`SET search_path TO "${c.env.DB_SCHEMA}", public`);
       });
-      dbClient = (0, import_node_postgres.drizzle)(pool, { logger: doLog });
+      dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
     } else {
-      dbClient = (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING, { logger: doLog });
+      dbClient = config ? (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING, config) : (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING);
     }
   }
   return dbClient;

@@ -149,14 +149,13 @@ var Int = class {
 
 // src/db.ts
 import { Pool } from "pg";
-var client = (c) => {
+var client = (c, config) => {
   let dbClient;
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
-  const doLog = c.env.DB_ENABLE_LOGGING === "true" ? true : false;
   if (c.env.HYPERDRIVE?.connectionString) {
-    dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
+    dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
   } else {
     if (c.env.DB_SCHEMA) {
       const pool = new Pool({
@@ -165,9 +164,9 @@ var client = (c) => {
       pool.on("connect", (client2) => {
         client2.query(`SET search_path TO "${c.env.DB_SCHEMA}", public`);
       });
-      dbClient = drizzlePostgres(pool, { logger: doLog });
+      dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
     } else {
-      dbClient = drizzleNeon(c.env.DB_CONNECTION_STRING, { logger: doLog });
+      dbClient = config ? drizzleNeon(c.env.DB_CONNECTION_STRING, config) : drizzleNeon(c.env.DB_CONNECTION_STRING);
     }
   }
   return dbClient;

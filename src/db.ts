@@ -2,6 +2,7 @@
 import { customType } from 'drizzle-orm/pg-core';
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
 import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
+import { type DrizzleConfig } from 'drizzle-orm';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
 import { Pool } from 'pg';
@@ -14,12 +15,12 @@ export const client = <
 			};
 			DB_CONNECTION_STRING?: string;
 			DB_SCHEMA?: string;
-			DB_ENABLE_LOGGING?: string;
 		}> &
 			Record<string, any>;
 	},
 >(
 	c: Context<T>,
+	config?: DrizzleConfig,
 ) => {
 	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 
@@ -27,10 +28,8 @@ export const client = <
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
 
-	const doLog = c.env.DB_ENABLE_LOGGING === 'true' ? true : false;
-
 	if (c.env.HYPERDRIVE?.connectionString) {
-		dbClient = drizzlePostgres(c.env.HYPERDRIVE.connectionString);
+		dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
 	} else {
 		if (c.env.DB_SCHEMA) {
 			const pool = new Pool({
@@ -40,9 +39,9 @@ export const client = <
 				client.query(`SET search_path TO "${c.env.DB_SCHEMA}", public`);
 			});
 
-			dbClient = drizzlePostgres(pool, { logger: doLog });
+			dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
 		} else {
-			dbClient = drizzleNeon(c.env.DB_CONNECTION_STRING, { logger: doLog });
+			dbClient = config ? drizzleNeon(c.env.DB_CONNECTION_STRING, config) : drizzleNeon(c.env.DB_CONNECTION_STRING);
 		}
 	}
 
