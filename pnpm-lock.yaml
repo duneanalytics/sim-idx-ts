@@ -13,7 +13,7 @@ importers:
         version: 1.0.1
       drizzle-orm:
         specifier: '>=0.44.0'
-        version: 0.44.2(@electric-sql/pglite@0.3.5)(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(pg@8.16.3)
+        version: 0.44.2(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(pg@8.16.3)
       hono:
         specifier: ^4.8.5
         version: 4.8.5
@@ -2128,7 +2128,7 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  drizzle-orm@0.44.2(@electric-sql/pglite@0.3.5)(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(pg@8.16.3):
+  drizzle-orm@0.44.2(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(pg@8.16.3):
     optionalDependencies:
       '@electric-sql/pglite': 0.3.5
       '@neondatabase/serverless': 1.0.1
