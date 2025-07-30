@@ -13,7 +13,7 @@ importers:
         version: 1.0.1
       drizzle-orm:
         specifier: '>=0.44.0'
-        version: 0.44.2(@neondatabase/serverless@1.0.1)(@types/pg@8.15.4)(pg@8.16.3)
+        version: 0.44.2(@electric-sql/pglite@0.3.6)(@neondatabase/serverless@1.0.1)(@types/pg@8.15.4)(pg@8.16.3)
       hono:
         specifier: ^4.8.5
         version: 4.8.5
@@ -21,6 +21,12 @@ importers:
         specifier: ^8.16.3
         version: 8.16.3
     devDependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.3.6
+        version: 0.3.6
+      '@electric-sql/pglite-socket':
+        specifier: ^0.0.11
+        version: 0.0.11(@electric-sql/pglite@0.3.6)
       '@types/node':
         specifier: ^24.0.13
         version: 24.0.13
@@ -78,6 +84,15 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@electric-sql/pglite-socket@0.0.11':
+    resolution: {integrity: sha512-xgNIDp+pWTyaCylEpjpBMJ3nLKj4QRKdE9FswQzEPEgji+VEiczxgdm6DnSbqHXs8eM5bbP3sVfnCxV4L0s5Lg==}
+    hasBin: true
+    peerDependencies:
+      '@electric-sql/pglite': 0.3.6
+
+  '@electric-sql/pglite@0.3.6':
+    resolution: {integrity: sha512-KFIoLIhiOzYQzT2TOxqWH9eAMZcZd4tzSGXDY+6qRboZY2P76yFDNTKS4SB2c3hy6vRqIrHSh24VDPi9FyNhlA==}
 
   '@esbuild/aix-ppc64@0.25.6':
     resolution: {integrity: sha512-ShbM/3XxwuxjFiuVBHA+d3j5dyac0aEVVq1oluIDf71hUw0aRF59dV/efUsIwFnR6m8JNM2FjZOzmaZ8yG61kw==}
@@ -1581,6 +1596,12 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
+  '@electric-sql/pglite-socket@0.0.11(@electric-sql/pglite@0.3.6)':
+    dependencies:
+      '@electric-sql/pglite': 0.3.6
+
+  '@electric-sql/pglite@0.3.6': {}
+
   '@esbuild/aix-ppc64@0.25.6':
     optional: true
 
@@ -2107,8 +2128,9 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  drizzle-orm@0.44.2(@neondatabase/serverless@1.0.1)(@types/pg@8.15.4)(pg@8.16.3):
+  drizzle-orm@0.44.2(@electric-sql/pglite@0.3.6)(@neondatabase/serverless@1.0.1)(@types/pg@8.15.4)(pg@8.16.3):
     optionalDependencies:
+      '@electric-sql/pglite': 0.3.6
       '@neondatabase/serverless': 1.0.1
       '@types/pg': 8.15.4
       pg: 8.16.3
