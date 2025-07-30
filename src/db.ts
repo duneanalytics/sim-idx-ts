@@ -57,7 +57,7 @@ export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | {
 			});
 			pool.on('connect', (client) => {
 				client.query('SET search_path TO $1', [searchPath]).catch(() => {
-					// Silently handle search_path setting errors
+					throw new Error('Failed to set search_path');
 				});
 			});
 
