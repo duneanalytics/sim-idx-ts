@@ -6,9 +6,9 @@ import { sql } from 'drizzle-orm';
 import { NodePgClient } from 'drizzle-orm/node-postgres';
 
 describe('postgres', () => {
-	let db: PGlite;
-	let server: PGLiteSocketServer;
-	let connectionString: string;
+	let db!: PGlite;
+	let server!: PGLiteSocketServer;
+	let connectionString!: string;
 	beforeAll(async () => {
 		db = await PGlite.create();
 		// Create and start a socket server
