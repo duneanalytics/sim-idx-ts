@@ -151,21 +151,22 @@ var Int = class {
 // src/db.ts
 import { Pool } from "pg";
 function extractSearchPathFromConnectionString(connectionString) {
-  try {
-    const url = new URL(connectionString);
-    const searchPathParam = url.searchParams.get("options");
-    if (!searchPathParam) {
-      return null;
-    }
-    const decoded = decodeURIComponent(searchPathParam);
-    const searchPathMatch = decoded.match(/-c\s+search_path=(.+?)(?:\s+-c|\s+|$)/i);
-    if (searchPathMatch && searchPathMatch[1]) {
-      return searchPathMatch[1];
-    }
-    return null;
-  } catch {
+  if (!URL.canParse(connectionString)) {
     return null;
   }
+  const url = new URL(connectionString);
+  if (url.protocol !== "postgres:") {
+    return null;
+  }
+  const searchPathParam = url.searchParams.get("options");
+  if (!searchPathParam) {
+    return null;
+  }
+  const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c|\s+|$)/i);
+  if (searchPathMatch && searchPathMatch[1]) {
+    return searchPathMatch[1];
+  }
+  return null;
 }
 var client = (c, config) => {
   let dbClient;

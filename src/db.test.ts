@@ -111,3 +111,4 @@ describe('extractSearchPathFromConnectionString', () => {
 		expect(result).toBe('schema1,public');
 	});
 });
+
