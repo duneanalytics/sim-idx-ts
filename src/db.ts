@@ -46,25 +46,28 @@ export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
 
+	let connectionString = c.env.DB_CONNECTION_STRING;
+	if (c.env.HYPERDRIVE?.connectionString) {
+		connectionString = c.env.HYPERDRIVE.connectionString;
+	}
+	const searchPath = extractSearchPathFromConnectionString(connectionString);
+
+	let pool: Pool | undefined;
+	if (searchPath) {
+		pool = new Pool({ connectionString: connectionString });
+		pool.on('connect', (client) => {
+			client.query('SET search_path TO $1', [searchPath]).catch(() => {
+				throw new Error('Failed to set search_path');
+			});
+		});
+		dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
+		return dbClient;
+	}
+
 	if (c.env.HYPERDRIVE?.connectionString) {
 		dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
 	} else {
-		const searchPath = extractSearchPathFromConnectionString(c.env.DB_CONNECTION_STRING);
-
-		if (searchPath) {
-			const pool = new Pool({
-				connectionString: c.env.DB_CONNECTION_STRING,
-			});
-			pool.on('connect', (client) => {
-				client.query('SET search_path TO $1', [searchPath]).catch(() => {
-					throw new Error('Failed to set search_path');
-				});
-			});
-
-			dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
-		} else {
-			dbClient = config ? drizzleNeon(c.env.DB_CONNECTION_STRING, config) : drizzleNeon(c.env.DB_CONNECTION_STRING);
-		}
+		dbClient = config ? drizzleNeon(c.env.DB_CONNECTION_STRING, config) : drizzleNeon(c.env.DB_CONNECTION_STRING);
 	}
 
 	return dbClient;

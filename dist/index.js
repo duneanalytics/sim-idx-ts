@@ -196,23 +196,26 @@ var client = (c, config) => {
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
+  let connectionString = c.env.DB_CONNECTION_STRING;
+  if (c.env.HYPERDRIVE?.connectionString) {
+    connectionString = c.env.HYPERDRIVE.connectionString;
+  }
+  const searchPath = extractSearchPathFromConnectionString(connectionString);
+  let pool;
+  if (searchPath) {
+    pool = new import_pg.Pool({ connectionString });
+    pool.on("connect", (client2) => {
+      client2.query("SET search_path TO $1", [searchPath]).catch(() => {
+        throw new Error("Failed to set search_path");
+      });
+    });
+    dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
+    return dbClient;
+  }
   if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = config ? (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString, config) : (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString);
   } else {
-    const searchPath = extractSearchPathFromConnectionString(c.env.DB_CONNECTION_STRING);
-    if (searchPath) {
-      const pool = new import_pg.Pool({
-        connectionString: c.env.DB_CONNECTION_STRING
-      });
-      pool.on("connect", (client2) => {
-        client2.query("SET search_path TO $1", [searchPath]).catch(() => {
-          throw new Error("Failed to set search_path");
-        });
-      });
-      dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
-    } else {
-      dbClient = config ? (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING, config) : (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING);
-    }
+    dbClient = config ? (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING, config) : (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING);
   }
   return dbClient;
 };
