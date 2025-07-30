@@ -1,0 +1,41 @@
+name: "Publish to NPM"
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    name: "Build, test and publish to NPM"
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: './package.json'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: "./.nvmrc"
+          cache: "pnpm"
+          cache-dependency-path: "./pnpm-lock.yaml"
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: "pnpm install --frozen-lockfile"
+
+      - run: "pnpm lint"
+
+      - run: "pnpm test"
+
+      - run: "pnpm build"
+
+      - name: Publish to NPM
+        run: pnpm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
