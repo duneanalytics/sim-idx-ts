@@ -29,20 +29,14 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 	}
 }
 
-export const client = <
-	T extends {
-		Bindings: Partial<{
-			HYPERDRIVE?: {
-				connectionString: string;
-			};
-			DB_CONNECTION_STRING?: string;
-		}> &
-			Record<string, any>;
-	},
->(
-	c: Context<T>,
-	config?: DrizzleConfig,
-) => {
+interface ClientBindings {
+	HYPERDRIVE?: {
+		connectionString: string;
+	};
+	DB_CONNECTION_STRING?: string;
+}
+
+export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | { env: ClientBindings }, config?: DrizzleConfig) => {
 	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 
 	if (!c.env.DB_CONNECTION_STRING) {
