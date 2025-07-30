@@ -41,16 +41,16 @@ declare namespace types {
   export { types_Address as Address, types_Bytes as Bytes, types_Int as Int, types_Uint as Uint };
 }
 
-type ClientBindigns = {
+interface ClientBindings {
     HYPERDRIVE?: {
         connectionString: string;
     };
     DB_CONNECTION_STRING?: string;
-} & Record<string, any>;
+}
 declare const client: <T extends {
-    Bindings: ClientBindigns;
+    Bindings: ClientBindings;
 }>(c: Context<T> | {
-    env: ClientBindigns;
+    env: ClientBindings;
 }) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
     $client: _neondatabase_serverless.NeonQueryFunction<any, any>;
 }) | (drizzle_orm_node_postgres.NodePgDatabase<Record<string, unknown>> & {
