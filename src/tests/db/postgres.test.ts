@@ -47,7 +47,10 @@ describe('postgres', () => {
 		});
 		const result = await c.execute(sql`select 1 c`.as<number>());
 		expect(result.rows).toEqual([{ c: 1 }]);
-		if (c.$client instanceof pg.Client || c.$client instanceof pg.Pool) {
+		if (c.$client instanceof pg.Client) {
+			await c.$client.end();
+		}
+		if (c.$client instanceof pg.Pool) {
 			await c.$client.end();
 		}
 	});
