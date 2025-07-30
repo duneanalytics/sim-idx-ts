@@ -13,7 +13,7 @@ importers:
         version: 1.0.1
       drizzle-orm:
         specifier: '>=0.44.0'
-        version: 0.44.2(@neondatabase/serverless@1.0.1)(@types/pg@8.15.4)(pg@8.16.3)
+        version: 0.44.2(@electric-sql/pglite@0.3.5)(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(pg@8.16.3)
       hono:
         specifier: ^4.8.5
         version: 4.8.5
@@ -21,9 +21,18 @@ importers:
         specifier: ^8.16.3
         version: 8.16.3
     devDependencies:
+      '@electric-sql/pglite':
+        specifier: 0.3.5
+        version: 0.3.5
+      '@electric-sql/pglite-socket':
+        specifier: ^0.0.11
+        version: 0.0.11(@electric-sql/pglite@0.3.5)
       '@types/node':
         specifier: ^24.0.13
         version: 24.0.13
+      '@types/pg':
+        specifier: ^8.15.5
+        version: 8.15.5
       '@vitest/coverage-v8':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4(@types/node@24.0.13))
@@ -78,6 +87,15 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@electric-sql/pglite-socket@0.0.11':
+    resolution: {integrity: sha512-xgNIDp+pWTyaCylEpjpBMJ3nLKj4QRKdE9FswQzEPEgji+VEiczxgdm6DnSbqHXs8eM5bbP3sVfnCxV4L0s5Lg==}
+    hasBin: true
+    peerDependencies:
+      '@electric-sql/pglite': 0.3.6
+
+  '@electric-sql/pglite@0.3.5':
+    resolution: {integrity: sha512-fhODErXJjOrnsJj5f1A8sH/Zj0INpLUbqOCiskufIUImUsFOBNHE6/FApY656Q2VSOp46wkXX3rvbBBO8O8Cag==}
 
   '@esbuild/aix-ppc64@0.25.6':
     resolution: {integrity: sha512-ShbM/3XxwuxjFiuVBHA+d3j5dyac0aEVVq1oluIDf71hUw0aRF59dV/efUsIwFnR6m8JNM2FjZOzmaZ8yG61kw==}
@@ -457,8 +475,8 @@ packages:
   '@types/node@24.0.13':
     resolution: {integrity: sha512-Qm9OYVOFHFYg3wJoTSrz80hoec5Lia/dPp84do3X7dZvLikQvM1YpmvTBEdIr/e+U8HTkFjLHLnl78K/qjf+jQ==}
 
-  '@types/pg@8.15.4':
-    resolution: {integrity: sha512-I6UNVBAoYbvuWkkU3oosC8yxqH21f4/Jc4DK71JLG3dT2mdlGe1z+ep/LQGXaKaOgcvUrsQoPRqfgtMcvZiJhg==}
+  '@types/pg@8.15.5':
+    resolution: {integrity: sha512-LF7lF6zWEKxuT3/OR8wAZGzkg4ENGXFNyiV/JeOt9z5B+0ZVwbql9McqX5c/WStFq1GaGso7H1AzP/qSzmlCKQ==}
 
   '@typescript-eslint/eslint-plugin@8.36.0':
     resolution: {integrity: sha512-lZNihHUVB6ZZiPBNgOQGSxUASI7UJWhT8nHyUGCnaQ28XFCw98IfrMCG3rUl1uwUWoAvodJQby2KTs79UTcrAg==}
@@ -1144,9 +1162,6 @@ packages:
     peerDependencies:
       pg: '>=8.0'
 
-  pg-protocol@1.10.2:
-    resolution: {integrity: sha512-Ci7jy8PbaWxfsck2dwZdERcDG2A0MG8JoQILs+uZNjABFuBuItAZCWUNz8sXRDMoui24rJw7WlXqgpMdBSN/vQ==}
-
   pg-protocol@1.10.3:
     resolution: {integrity: sha512-6DIBgBQaTKDJyxnXaLiLR8wBpQQcGWuAESkRBX/t6OwA8YsqP+iVSiond2EDy6Y/dsGk8rh/jtax3js5NeV7JQ==}
 
@@ -1581,6 +1596,12 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
+  '@electric-sql/pglite-socket@0.0.11(@electric-sql/pglite@0.3.5)':
+    dependencies:
+      '@electric-sql/pglite': 0.3.5
+
+  '@electric-sql/pglite@0.3.5': {}
+
   '@esbuild/aix-ppc64@0.25.6':
     optional: true
 
@@ -1747,7 +1768,7 @@ snapshots:
   '@neondatabase/serverless@1.0.1':
     dependencies:
       '@types/node': 22.15.33
-      '@types/pg': 8.15.4
+      '@types/pg': 8.15.5
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -1842,10 +1863,10 @@ snapshots:
     dependencies:
       undici-types: 7.8.0
 
-  '@types/pg@8.15.4':
+  '@types/pg@8.15.5':
     dependencies:
       '@types/node': 24.0.13
-      pg-protocol: 1.10.2
+      pg-protocol: 1.10.3
       pg-types: 2.2.0
 
   '@typescript-eslint/eslint-plugin@8.36.0(@typescript-eslint/parser@8.36.0(eslint@9.31.0)(typescript@5.8.3))(eslint@9.31.0)(typescript@5.8.3)':
@@ -2107,10 +2128,11 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  drizzle-orm@0.44.2(@neondatabase/serverless@1.0.1)(@types/pg@8.15.4)(pg@8.16.3):
+  drizzle-orm@0.44.2(@electric-sql/pglite@0.3.5)(@neondatabase/serverless@1.0.1)(@types/pg@8.15.5)(pg@8.16.3):
     optionalDependencies:
+      '@electric-sql/pglite': 0.3.5
       '@neondatabase/serverless': 1.0.1
-      '@types/pg': 8.15.4
+      '@types/pg': 8.15.5
       pg: 8.16.3
 
   eastasianwidth@0.2.0: {}
@@ -2499,8 +2521,6 @@ snapshots:
   pg-pool@3.10.1(pg@8.16.3):
     dependencies:
       pg: 8.16.3
-
-  pg-protocol@1.10.2: {}
 
   pg-protocol@1.10.3: {}
 

@@ -5,19 +5,14 @@ import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
 
-export const client = <
-	T extends {
-		Bindings: Partial<{
-			HYPERDRIVE?: {
-				connectionString: string;
-			};
-			DB_CONNECTION_STRING?: string;
-		}> &
-			Record<string, any>;
-	},
->(
-	c: Context<T>,
-) => {
+interface ClientBindings {
+	HYPERDRIVE?: {
+		connectionString: string;
+	};
+	DB_CONNECTION_STRING?: string;
+}
+
+export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | { env: ClientBindings }) => {
 	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 
 	if (!c.env.DB_CONNECTION_STRING) {
