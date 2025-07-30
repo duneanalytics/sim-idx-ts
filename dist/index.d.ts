@@ -41,12 +41,12 @@ declare namespace types {
   export { types_Address as Address, types_Bytes as Bytes, types_Int as Int, types_Uint as Uint };
 }
 
-type ClientBindigns = Partial<{
+type ClientBindigns = {
     HYPERDRIVE?: {
         connectionString: string;
     };
     DB_CONNECTION_STRING?: string;
-}> & Record<string, any>;
+} & Record<string, any>;
 declare const client: <T extends {
     Bindings: ClientBindigns;
 }>(c: Context<T> | {

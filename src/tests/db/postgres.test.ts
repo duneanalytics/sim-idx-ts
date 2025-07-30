@@ -2,7 +2,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
 import { client } from '../../db';
 import pg from 'pg';
-import { sql } from 'drizzle-orm';
+import { desc, sql } from 'drizzle-orm';
 import { NodePgClient } from 'drizzle-orm/node-postgres';
 
 describe('postgres', () => {
@@ -28,30 +28,34 @@ describe('postgres', () => {
 		await db.close();
 	});
 
-	it('should handle plain pg client connections', async () => {
-		const client = new pg.Client(connectionString);
-		await client.connect();
-		const result = await client.query('select 1 c');
-		expect(result.rows).toEqual([{ c: 1 }]);
-		await client.end();
+	describe('test-setup', () => {
+		it('should handle plain pg client connections', async () => {
+			const client = new pg.Client(connectionString);
+			await client.connect();
+			const result = await client.query('select 1 c');
+			expect(result.rows).toEqual([{ c: 1 }]);
+			await client.end();
+		});
 	});
 
-	it('should work with custom client from db.ts', async () => {
-		const c = client({
-			env: {
-				DB_CONNECTION_STRING: connectionString,
-				HYPERDRIVE: {
-					connectionString: connectionString,
+	describe('drizzle-orm', () => {
+		it('should work with custom client from db.ts', async () => {
+			const c = client({
+				env: {
+					DB_CONNECTION_STRING: connectionString,
+					HYPERDRIVE: {
+						connectionString: connectionString,
+					},
 				},
-			},
+			});
+			const result = await c.execute(sql`select 1 c`.as<number>());
+			expect(result.rows).toEqual([{ c: 1 }]);
+			if (c.$client instanceof pg.Client) {
+				await c.$client.end();
+			}
+			if (c.$client instanceof pg.Pool) {
+				await c.$client.end();
+			}
 		});
-		const result = await c.execute(sql`select 1 c`.as<number>());
-		expect(result.rows).toEqual([{ c: 1 }]);
-		if (c.$client instanceof pg.Client) {
-			await c.$client.end();
-		}
-		if (c.$client instanceof pg.Pool) {
-			await c.$client.end();
-		}
 	});
 });
