@@ -182,8 +182,8 @@ var client = (c, config) => {
   if (searchPath) {
     pool = new Pool({ connectionString });
     pool.on("connect", (client2) => {
-      client2.query("SET search_path TO $1", [searchPath]).catch(() => {
-        throw new Error("Failed to set search_path");
+      client2.query("SET search_path TO $1", [searchPath]).catch((error) => {
+        console.error("Failed to set search_path", error);
       });
     });
     dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);

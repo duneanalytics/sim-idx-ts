@@ -22,7 +22,6 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 		return null;
 	}
 
-	// const decoded = decodeURIComponent(searchPathParam);
 	const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c|\s+|$)/i);
 
 	if (searchPathMatch && searchPathMatch[1]) {
@@ -56,8 +55,8 @@ export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | {
 	if (searchPath) {
 		pool = new Pool({ connectionString: connectionString });
 		pool.on('connect', (client) => {
-			client.query('SET search_path TO $1', [searchPath]).catch(() => {
-				throw new Error('Failed to set search_path');
+			client.query('SET search_path TO $1', [searchPath]).catch((error) => {
+				console.error('Failed to set search_path', error);
 			});
 		});
 		dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
