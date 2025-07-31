@@ -23,7 +23,6 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 	}
 
 	const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c|\s+|$)/i);
-
 	if (searchPathMatch && searchPathMatch[1]) {
 		return searchPathMatch[1];
 	}
