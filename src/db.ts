@@ -56,6 +56,7 @@ export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | {
 		pool = new Pool({ connectionString: connectionString });
 		pool.on('connect', (client) => {
 			client.query('SET search_path TO $1', [searchPath]).catch((error) => {
+				// eslint-disable-next-line no-console
 				console.error('Failed to set search_path', error);
 			});
 		});
