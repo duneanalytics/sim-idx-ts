@@ -2,6 +2,7 @@ import * as drizzle_orm_pg_core from 'drizzle-orm/pg-core';
 import * as drizzle_orm_node_postgres from 'drizzle-orm/node-postgres';
 import * as _neondatabase_serverless from '@neondatabase/serverless';
 import * as drizzle_orm_neon_http from 'drizzle-orm/neon-http';
+import { DrizzleConfig } from 'drizzle-orm';
 import { Context, Hono } from 'hono';
 import * as hono_types from 'hono/types';
 import { HonoOptions } from 'hono/hono-base';
@@ -41,6 +42,7 @@ declare namespace types {
   export { types_Address as Address, types_Bytes as Bytes, types_Int as Int, types_Uint as Uint };
 }
 
+declare function extractSearchPathFromConnectionString(connectionString: string): string | null;
 interface ClientBindings {
     HYPERDRIVE?: {
         connectionString: string;
@@ -51,7 +53,7 @@ declare const client: <T extends {
     Bindings: ClientBindings;
 }>(c: Context<T> | {
     env: ClientBindings;
-}) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
+}, config?: DrizzleConfig) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
     $client: _neondatabase_serverless.NeonQueryFunction<any, any>;
 }) | (drizzle_orm_node_postgres.NodePgDatabase<Record<string, unknown>> & {
     $client: drizzle_orm_node_postgres.NodePgClient;
@@ -2076,6 +2078,7 @@ declare const db_bytes7: typeof bytes7;
 declare const db_bytes8: typeof bytes8;
 declare const db_bytes9: typeof bytes9;
 declare const db_client: typeof client;
+declare const db_extractSearchPathFromConnectionString: typeof extractSearchPathFromConnectionString;
 declare const db_int104: typeof int104;
 declare const db_int112: typeof int112;
 declare const db_int120: typeof int120;
@@ -2120,7 +2123,7 @@ declare const db_uint80: typeof uint80;
 declare const db_uint88: typeof uint88;
 declare const db_uint96: typeof uint96;
 declare namespace db {
-  export { db_address as address, db_bytes as bytes, db_bytes1 as bytes1, db_bytes10 as bytes10, db_bytes11 as bytes11, db_bytes12 as bytes12, db_bytes13 as bytes13, db_bytes14 as bytes14, db_bytes15 as bytes15, db_bytes16 as bytes16, db_bytes17 as bytes17, db_bytes18 as bytes18, db_bytes19 as bytes19, db_bytes2 as bytes2, db_bytes20 as bytes20, db_bytes21 as bytes21, db_bytes22 as bytes22, db_bytes23 as bytes23, db_bytes24 as bytes24, db_bytes25 as bytes25, db_bytes26 as bytes26, db_bytes27 as bytes27, db_bytes28 as bytes28, db_bytes29 as bytes29, db_bytes3 as bytes3, db_bytes30 as bytes30, db_bytes31 as bytes31, db_bytes32 as bytes32, db_bytes4 as bytes4, db_bytes5 as bytes5, db_bytes6 as bytes6, db_bytes7 as bytes7, db_bytes8 as bytes8, db_bytes9 as bytes9, db_client as client, db_int104 as int104, db_int112 as int112, db_int120 as int120, db_int128 as int128, db_int136 as int136, db_int144 as int144, db_int152 as int152, db_int16 as int16, db_int160 as int160, db_int24 as int24, db_int256 as int256, db_int32 as int32, db_int40 as int40, db_int48 as int48, db_int56 as int56, db_int64 as int64, db_int72 as int72, db_int8 as int8, db_int80 as int80, db_int88 as int88, db_int96 as int96, db_struct as struct, db_uint104 as uint104, db_uint112 as uint112, db_uint120 as uint120, db_uint128 as uint128, db_uint136 as uint136, db_uint144 as uint144, db_uint152 as uint152, db_uint16 as uint16, db_uint160 as uint160, db_uint24 as uint24, db_uint256 as uint256, db_uint32 as uint32, db_uint40 as uint40, db_uint48 as uint48, db_uint56 as uint56, db_uint64 as uint64, db_uint72 as uint72, db_uint8 as uint8, db_uint80 as uint80, db_uint88 as uint88, db_uint96 as uint96 };
+  export { db_address as address, db_bytes as bytes, db_bytes1 as bytes1, db_bytes10 as bytes10, db_bytes11 as bytes11, db_bytes12 as bytes12, db_bytes13 as bytes13, db_bytes14 as bytes14, db_bytes15 as bytes15, db_bytes16 as bytes16, db_bytes17 as bytes17, db_bytes18 as bytes18, db_bytes19 as bytes19, db_bytes2 as bytes2, db_bytes20 as bytes20, db_bytes21 as bytes21, db_bytes22 as bytes22, db_bytes23 as bytes23, db_bytes24 as bytes24, db_bytes25 as bytes25, db_bytes26 as bytes26, db_bytes27 as bytes27, db_bytes28 as bytes28, db_bytes29 as bytes29, db_bytes3 as bytes3, db_bytes30 as bytes30, db_bytes31 as bytes31, db_bytes32 as bytes32, db_bytes4 as bytes4, db_bytes5 as bytes5, db_bytes6 as bytes6, db_bytes7 as bytes7, db_bytes8 as bytes8, db_bytes9 as bytes9, db_client as client, db_extractSearchPathFromConnectionString as extractSearchPathFromConnectionString, db_int104 as int104, db_int112 as int112, db_int120 as int120, db_int128 as int128, db_int136 as int136, db_int144 as int144, db_int152 as int152, db_int16 as int16, db_int160 as int160, db_int24 as int24, db_int256 as int256, db_int32 as int32, db_int40 as int40, db_int48 as int48, db_int56 as int56, db_int64 as int64, db_int72 as int72, db_int8 as int8, db_int80 as int80, db_int88 as int88, db_int96 as int96, db_struct as struct, db_uint104 as uint104, db_uint112 as uint112, db_uint120 as uint120, db_uint128 as uint128, db_uint136 as uint136, db_uint144 as uint144, db_uint152 as uint152, db_uint16 as uint16, db_uint160 as uint160, db_uint24 as uint24, db_uint256 as uint256, db_uint32 as uint32, db_uint40 as uint40, db_uint48 as uint48, db_uint56 as uint56, db_uint64 as uint64, db_uint72 as uint72, db_uint8 as uint8, db_uint80 as uint80, db_uint88 as uint88, db_uint96 as uint96 };
 }
 
 /**
