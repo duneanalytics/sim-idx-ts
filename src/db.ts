@@ -5,7 +5,7 @@ import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
 import { type DrizzleConfig } from 'drizzle-orm';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
-import { Pool ,escapeIdentifier} from 'pg';
+import { Pool, escapeIdentifier } from 'pg';
 
 export function extractSearchPathFromConnectionString(connectionString: string): string | null {
 	if (!URL.canParse(connectionString)) {
@@ -25,9 +25,9 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 	const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c|$)/i);
 	if (searchPathMatch && searchPathMatch[1]) {
 		const rawSearchPath = searchPathMatch[1];
-		
+
 		// Split by comma and process each schema
-		const schemas = rawSearchPath.split(',').map(schema => {
+		const schemas = rawSearchPath.split(',').map((schema) => {
 			// Trim whitespace
 			const trimmed = schema.trim();
 			// Remove quotes if they exist
@@ -35,7 +35,7 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 			// Escape the identifier
 			return escapeIdentifier(unquoted);
 		});
-		
+
 		return schemas.join(',');
 	}
 
@@ -66,7 +66,7 @@ export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | {
 	if (searchPath) {
 		pool = new Pool({ connectionString: connectionString });
 		pool.on('connect', (client) => {
-			client.query(`SET search_path TO ${searchPath}`).catch(error => {
+			client.query(`SET search_path TO ${searchPath}`).catch((error) => {
 				// eslint-disable-next-line no-console
 				console.error('Failed to set search_path', error);
 			});

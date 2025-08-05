@@ -112,7 +112,8 @@ describe('extractSearchPathFromConnectionString', () => {
 	});
 
 	it('should handle schemas with sql injection', () => {
-		const connectionString = 'postgres://user:pass@host/db?options=-c%20search_path%3D%22schema;drop table users;%22%2C%22schema%20with%20space%22%2Cpublic';
+		const connectionString =
+			'postgres://user:pass@host/db?options=-c%20search_path%3D%22schema;drop table users;%22%2C%22schema%20with%20space%22%2Cpublic';
 		const result = extractSearchPathFromConnectionString(connectionString);
 		expect(result).toBe('"schema;drop table users;","schema with space","public"');
 	});
