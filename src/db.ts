@@ -22,7 +22,7 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 		return null;
 	}
 
-	const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c|$)/i);
+	const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c(?:\s|$)|$)/i);
 	if (searchPathMatch && searchPathMatch[1]) {
 		const rawSearchPath = searchPathMatch[1];
 
