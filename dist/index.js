@@ -185,9 +185,15 @@ function extractSearchPathFromConnectionString(connectionString) {
   if (!searchPathParam) {
     return null;
   }
-  const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c|\s+|$)/i);
+  const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c|$)/i);
   if (searchPathMatch && searchPathMatch[1]) {
-    return searchPathMatch[1];
+    const rawSearchPath = searchPathMatch[1];
+    const schemas = rawSearchPath.split(",").map((schema) => {
+      const trimmed = schema.trim();
+      const unquoted = trimmed.replace(/^"(.*)"$/, "$1");
+      return (0, import_pg.escapeIdentifier)(unquoted);
+    });
+    return schemas.join(",");
   }
   return null;
 }
@@ -203,9 +209,10 @@ var client = (c, config) => {
   const searchPath = extractSearchPathFromConnectionString(connectionString);
   let pool;
   if (searchPath) {
+    console.log("searchPath", searchPath);
     pool = new import_pg.Pool({ connectionString });
     pool.on("connect", (client2) => {
-      client2.query("SET search_path TO $1", [searchPath]).catch((error) => {
+      client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
         console.error("Failed to set search_path", error);
       });
     });
