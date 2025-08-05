@@ -186,7 +186,6 @@ var client = (c, config) => {
   const searchPath = extractSearchPathFromConnectionString(connectionString);
   let pool;
   if (searchPath) {
-    console.log("searchPath", searchPath);
     pool = new Pool({ connectionString });
     pool.on("connect", (client2) => {
       client2.query(`SET search_path TO ${searchPath}`).catch((error) => {

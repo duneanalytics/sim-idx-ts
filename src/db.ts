@@ -6,7 +6,6 @@ import { type DrizzleConfig } from 'drizzle-orm';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
 import { Pool ,escapeIdentifier} from 'pg';
-// import { escape } from 'pg-escape';
 
 export function extractSearchPathFromConnectionString(connectionString: string): string | null {
 	if (!URL.canParse(connectionString)) {
@@ -65,7 +64,6 @@ export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | {
 
 	let pool: Pool | undefined;
 	if (searchPath) {
-		console.log('searchPath', searchPath);
 		pool = new Pool({ connectionString: connectionString });
 		pool.on('connect', (client) => {
 			client.query(`SET search_path TO ${searchPath}`).catch(error => {
