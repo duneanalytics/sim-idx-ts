@@ -149,7 +149,7 @@ var Int = class {
 };
 
 // src/db.ts
-import { Pool } from "pg";
+import { Pool, escapeIdentifier } from "pg";
 function extractSearchPathFromConnectionString(connectionString) {
   if (!URL.canParse(connectionString)) {
     return null;
@@ -162,9 +162,15 @@ function extractSearchPathFromConnectionString(connectionString) {
   if (!searchPathParam) {
     return null;
   }
-  const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c|\s+|$)/i);
+  const searchPathMatch = searchPathParam.match(/-c\s+search_path=(.+?)(?:\s+-c(?:\s|$)|$)/i);
   if (searchPathMatch && searchPathMatch[1]) {
-    return searchPathMatch[1];
+    const rawSearchPath = searchPathMatch[1];
+    const schemas = rawSearchPath.split(",").map((schema) => {
+      const trimmed = schema.trim();
+      const unquoted = trimmed.replace(/^"(.*)"$/, "$1");
+      return escapeIdentifier(unquoted);
+    });
+    return schemas.join(",");
   }
   return null;
 }
@@ -182,7 +188,7 @@ var client = (c, config) => {
   if (searchPath) {
     pool = new Pool({ connectionString });
     pool.on("connect", (client2) => {
-      client2.query("SET search_path TO $1", [searchPath]).catch((error) => {
+      client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
         console.error("Failed to set search_path", error);
       });
     });
