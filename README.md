@@ -104,27 +104,14 @@ pnpm fix:prettier
 
 ## Deploying
 
-If you have the power to deploy, you can run the following commands to deploy the package to the npm registry:
+1. First, update `package.json` with the next version number (and merge that)
+1. Then, create a new tag in the format of `v*.*.*` (check
+   https://github.com/duneanalytics/sim-idx-ts/tags for the latest tag) and
+   increase it accordingly.
 
-**⚠️ Important: Only deploy from the `main` branch**
-
-1. Tag a new version of the package:
-
-```bash
-npm version <patch|minor|major>
-```
-
-2. Push the tag to the remote repository:
-```bash
-git push --tags
-```
-
-3. Publish the package to the npm registry:
-
-```bash
-npm publish
-```
-4. Create a new release on GitHub with the same version number.
+   Creating a new tag will run a Github action that will build & publish the
+   library to npm.
+1. Create a new release on GitHub with the same version number.
 
 ## License
 
