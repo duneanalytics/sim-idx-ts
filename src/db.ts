@@ -83,7 +83,7 @@ export function client<T extends { Bindings: ClientBindings }>(c: Context<T> | {
 		// Reuse existing pool or create new one
 		let pool = pools.get(connectionString);
 		if (!pool) {
-			pool = new Pool({ connectionString });
+			pool = new Pool({ connectionString, max: 4 });
 			pool.on('connect', (client) => {
 				client.query(`SET search_path TO ${searchPath}`).catch((error) => {
 					// eslint-disable-next-line no-console

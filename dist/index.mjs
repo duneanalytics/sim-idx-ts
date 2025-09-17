@@ -201,7 +201,7 @@ function client(c, config) {
   if (searchPath) {
     let pool = pools.get(connectionString);
     if (!pool) {
-      pool = new Pool({ connectionString });
+      pool = new Pool({ connectionString, max: 4 });
       pool.on("connect", (client2) => {
         client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
           console.error("Failed to set search_path", error);
