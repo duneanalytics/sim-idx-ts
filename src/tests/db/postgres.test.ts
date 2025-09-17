@@ -1,9 +1,8 @@
 import { PGlite } from '@electric-sql/pglite';
 import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
-import { client, cleanup } from '../../db';
+import { client } from '../../db';
 import pg from 'pg';
-import { desc, sql } from 'drizzle-orm';
-import { NodePgClient } from 'drizzle-orm/node-postgres';
+import { sql } from 'drizzle-orm';
 
 describe('postgres', () => {
 	let db: PGlite;
@@ -24,7 +23,6 @@ describe('postgres', () => {
 	});
 
 	afterAll(async () => {
-		await cleanup();
 		await server?.stop();
 		await db?.close();
 	});
