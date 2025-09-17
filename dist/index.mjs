@@ -41,6 +41,7 @@ __export(db_exports, {
   bytes7: () => bytes7,
   bytes8: () => bytes8,
   bytes9: () => bytes9,
+  cleanup: () => cleanup,
   client: () => client,
   extractSearchPathFromConnectionString: () => extractSearchPathFromConnectionString,
   int104: () => int104,
@@ -174,8 +175,16 @@ function extractSearchPathFromConnectionString(connectionString) {
   }
   return null;
 }
-var client = (c, config) => {
-  let dbClient;
+var pools = /* @__PURE__ */ new Map();
+var drizzleClients = /* @__PURE__ */ new Map();
+async function cleanup() {
+  for (const pool of pools.values()) {
+    await pool.end();
+  }
+  pools.clear();
+  drizzleClients.clear();
+}
+function client(c, config) {
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
@@ -183,25 +192,32 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
+  const existingClient = drizzleClients.get(connectionString);
+  if (existingClient) {
+    return existingClient;
+  }
+  let dbClient;
   const searchPath = extractSearchPathFromConnectionString(connectionString);
-  let pool;
   if (searchPath) {
-    pool = new Pool({ connectionString });
-    pool.on("connect", (client2) => {
-      client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
-        console.error("Failed to set search_path", error);
+    let pool = pools.get(connectionString);
+    if (!pool) {
+      pool = new Pool({ connectionString });
+      pool.on("connect", (client2) => {
+        client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
+          console.error("Failed to set search_path", error);
+        });
       });
-    });
+      pools.set(connectionString, pool);
+    }
     dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
-    return dbClient;
-  }
-  if (c.env.HYPERDRIVE?.connectionString) {
-    dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
+  } else if (c.env.HYPERDRIVE?.connectionString) {
+    dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
   } else {
-    dbClient = config ? drizzleNeon(c.env.DB_CONNECTION_STRING, config) : drizzleNeon(c.env.DB_CONNECTION_STRING);
+    dbClient = config ? drizzleNeon(connectionString, config) : drizzleNeon(connectionString);
   }
+  drizzleClients.set(connectionString, dbClient);
   return dbClient;
-};
+}
 var address = customType({
   dataType() {
     return "bytea";

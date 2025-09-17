@@ -49,9 +49,18 @@ interface ClientBindings {
 	DB_CONNECTION_STRING?: string;
 }
 
-export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | { env: ClientBindings }, config?: DrizzleConfig) => {
-	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
+const pools = new Map<string, Pool>();
+const drizzleClients = new Map<string, ReturnType<typeof drizzleNeon | typeof drizzlePostgres>>();
 
+export async function cleanup() {
+	for (const pool of pools.values()) {
+		await pool.end();
+	}
+	pools.clear();
+	drizzleClients.clear();
+}
+
+export function client<T extends { Bindings: ClientBindings }>(c: Context<T> | { env: ClientBindings }, config?: DrizzleConfig) {
 	if (!c.env.DB_CONNECTION_STRING) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
@@ -60,29 +69,39 @@ export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | {
 	if (c.env.HYPERDRIVE?.connectionString) {
 		connectionString = c.env.HYPERDRIVE.connectionString;
 	}
+
+	// Check if we already have a client for this connection string
+	const existingClient = drizzleClients.get(connectionString);
+	if (existingClient) {
+		return existingClient;
+	}
+
+	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 	const searchPath = extractSearchPathFromConnectionString(connectionString);
 
-	let pool: Pool | undefined;
 	if (searchPath) {
-		pool = new Pool({ connectionString: connectionString });
-		pool.on('connect', (client) => {
-			client.query(`SET search_path TO ${searchPath}`).catch((error) => {
-				// eslint-disable-next-line no-console
-				console.error('Failed to set search_path', error);
+		// Reuse existing pool or create new one
+		let pool = pools.get(connectionString);
+		if (!pool) {
+			pool = new Pool({ connectionString });
+			pool.on('connect', (client) => {
+				client.query(`SET search_path TO ${searchPath}`).catch((error) => {
+					// eslint-disable-next-line no-console
+					console.error('Failed to set search_path', error);
+				});
 			});
-		});
+			pools.set(connectionString, pool);
+		}
 		dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
-		return dbClient;
-	}
-
-	if (c.env.HYPERDRIVE?.connectionString) {
-		dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
+	} else if (c.env.HYPERDRIVE?.connectionString) {
+		dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
 	} else {
-		dbClient = config ? drizzleNeon(c.env.DB_CONNECTION_STRING, config) : drizzleNeon(c.env.DB_CONNECTION_STRING);
+		dbClient = config ? drizzleNeon(connectionString, config) : drizzleNeon(connectionString);
 	}
 
+	drizzleClients.set(connectionString, dbClient);
 	return dbClient;
-};
+}
 
 export const address = customType<{ data: Address; notNull: false; default: false }>({
 	dataType() {
