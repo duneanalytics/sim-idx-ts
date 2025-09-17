@@ -54,7 +54,7 @@ interface DbContext {
 	__pools: Map<string, Pool>;
 }
 
-export const client =<T extends { Bindings: ClientBindings }>(
+export const client = <T extends { Bindings: ClientBindings }>(
 	c: (Context<T> | { env: ClientBindings }) & Partial<DbContext>,
 	config?: DrizzleConfig,
 ) => {
@@ -111,7 +111,7 @@ export const client =<T extends { Bindings: ClientBindings }>(
 
 	drizzleClients.set(connectionString, dbClient);
 	return dbClient;
-}
+};
 
 export const address = customType<{ data: Address; notNull: false; default: false }>({
 	dataType() {
