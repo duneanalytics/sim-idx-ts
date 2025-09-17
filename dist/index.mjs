@@ -175,7 +175,6 @@ function extractSearchPathFromConnectionString(connectionString) {
   return null;
 }
 var client = (c, config) => {
-  let dbClient;
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
@@ -183,22 +182,29 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
-  const searchPath = extractSearchPathFromConnectionString(connectionString);
-  let pool;
-  if (searchPath) {
-    pool = new Pool({ connectionString });
-    pool.on("connect", (client2) => {
-      client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
-        console.error("Failed to set search_path", error);
-      });
-    });
-    dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
-    return dbClient;
+  let pools = c.__pools;
+  if (!pools) {
+    pools = /* @__PURE__ */ new Map();
+    c.__pools = pools;
   }
-  if (c.env.HYPERDRIVE?.connectionString) {
-    dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
+  let dbClient;
+  const searchPath = extractSearchPathFromConnectionString(connectionString);
+  if (searchPath) {
+    let pool = pools.get(connectionString);
+    if (!pool) {
+      pool = new Pool({ connectionString, max: 4 });
+      pool.on("connect", (client2) => {
+        client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
+          console.error("Failed to set search_path", error);
+        });
+      });
+      pools.set(connectionString, pool);
+    }
+    dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
+  } else if (c.env.HYPERDRIVE?.connectionString) {
+    dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
   } else {
-    dbClient = config ? drizzleNeon(c.env.DB_CONNECTION_STRING, config) : drizzleNeon(c.env.DB_CONNECTION_STRING);
+    dbClient = config ? drizzleNeon(connectionString, config) : drizzleNeon(connectionString);
   }
   return dbClient;
 };

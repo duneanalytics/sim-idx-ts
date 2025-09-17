@@ -198,7 +198,6 @@ function extractSearchPathFromConnectionString(connectionString) {
   return null;
 }
 var client = (c, config) => {
-  let dbClient;
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
@@ -206,22 +205,29 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
-  const searchPath = extractSearchPathFromConnectionString(connectionString);
-  let pool;
-  if (searchPath) {
-    pool = new import_pg.Pool({ connectionString });
-    pool.on("connect", (client2) => {
-      client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
-        console.error("Failed to set search_path", error);
-      });
-    });
-    dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
-    return dbClient;
+  let pools = c.__pools;
+  if (!pools) {
+    pools = /* @__PURE__ */ new Map();
+    c.__pools = pools;
   }
-  if (c.env.HYPERDRIVE?.connectionString) {
-    dbClient = config ? (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString, config) : (0, import_node_postgres.drizzle)(c.env.HYPERDRIVE.connectionString);
+  let dbClient;
+  const searchPath = extractSearchPathFromConnectionString(connectionString);
+  if (searchPath) {
+    let pool = pools.get(connectionString);
+    if (!pool) {
+      pool = new import_pg.Pool({ connectionString, max: 4 });
+      pool.on("connect", (client2) => {
+        client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
+          console.error("Failed to set search_path", error);
+        });
+      });
+      pools.set(connectionString, pool);
+    }
+    dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
+  } else if (c.env.HYPERDRIVE?.connectionString) {
+    dbClient = config ? (0, import_node_postgres.drizzle)(connectionString, config) : (0, import_node_postgres.drizzle)(connectionString);
   } else {
-    dbClient = config ? (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING, config) : (0, import_neon_http.drizzle)(c.env.DB_CONNECTION_STRING);
+    dbClient = config ? (0, import_neon_http.drizzle)(connectionString, config) : (0, import_neon_http.drizzle)(connectionString);
   }
   return dbClient;
 };

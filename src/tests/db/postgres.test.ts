@@ -2,8 +2,7 @@ import { PGlite } from '@electric-sql/pglite';
 import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
 import { client } from '../../db';
 import pg from 'pg';
-import { desc, sql } from 'drizzle-orm';
-import { NodePgClient } from 'drizzle-orm/node-postgres';
+import { sql } from 'drizzle-orm';
 
 describe('postgres', () => {
 	let db: PGlite;
@@ -55,6 +54,24 @@ describe('postgres', () => {
 			}
 			if (c.$client instanceof pg.Pool) {
 				await c.$client.end();
+			}
+		});
+
+		it('should reuse pools for the same connection string', async () => {
+			const ctx = {
+				env: {
+					DB_CONNECTION_STRING: `${connectionString}&options=-c%20search_path=public`,
+				},
+				__pools: new Map(),
+			};
+			expect(ctx.__pools.size).toBe(0);
+			const client1 = client(ctx);
+			expect(ctx.__pools.size).toBe(1);
+			const client2 = client(ctx);
+			expect(ctx.__pools.size).toBe(1);
+
+			if (client1.$client instanceof pg.Pool) {
+				await client1.$client.end();
 			}
 		});
 	});

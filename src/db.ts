@@ -49,9 +49,14 @@ interface ClientBindings {
 	DB_CONNECTION_STRING?: string;
 }
 
-export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | { env: ClientBindings }, config?: DrizzleConfig) => {
-	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
+interface DbContext {
+	__pools: Map<string, Pool>;
+}
 
+export const client = <T extends { Bindings: ClientBindings }>(
+	c: (Context<T> | { env: ClientBindings }) & Partial<DbContext>,
+	config?: DrizzleConfig,
+) => {
 	if (!c.env.DB_CONNECTION_STRING) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
@@ -60,25 +65,37 @@ export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | {
 	if (c.env.HYPERDRIVE?.connectionString) {
 		connectionString = c.env.HYPERDRIVE.connectionString;
 	}
+
+	// TODO: this is a bit hacky, but cloudflare workers does not seem to have a better way of interacting with state across the request.
+	// We keep the drizzle clients and pools in the context so that we can reuse them across the same request and so that they are cleanup by the garbage collector
+	let pools = c.__pools;
+	if (!pools) {
+		pools = new Map();
+		c.__pools = pools;
+	}
+	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 	const searchPath = extractSearchPathFromConnectionString(connectionString);
 
-	let pool: Pool | undefined;
 	if (searchPath) {
-		pool = new Pool({ connectionString: connectionString });
-		pool.on('connect', (client) => {
-			client.query(`SET search_path TO ${searchPath}`).catch((error) => {
-				// eslint-disable-next-line no-console
-				console.error('Failed to set search_path', error);
+		// Reuse existing pool or create new one
+		let pool = pools.get(connectionString);
+		if (!pool) {
+			// Set to 4 because of the limit of the cloudflare workers and allow some room for other connections
+			// https://developers.cloudflare.com/workers/platform/limits/#simultaneous-open-connections
+			pool = new Pool({ connectionString, max: 4 });
+			pool.on('connect', (client) => {
+				client.query(`SET search_path TO ${searchPath}`).catch((error) => {
+					// eslint-disable-next-line no-console
+					console.error('Failed to set search_path', error);
+				});
 			});
-		});
+			pools.set(connectionString, pool);
+		}
 		dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
-		return dbClient;
-	}
-
-	if (c.env.HYPERDRIVE?.connectionString) {
-		dbClient = config ? drizzlePostgres(c.env.HYPERDRIVE.connectionString, config) : drizzlePostgres(c.env.HYPERDRIVE.connectionString);
+	} else if (c.env.HYPERDRIVE?.connectionString) {
+		dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
 	} else {
-		dbClient = config ? drizzleNeon(c.env.DB_CONNECTION_STRING, config) : drizzleNeon(c.env.DB_CONNECTION_STRING);
+		dbClient = config ? drizzleNeon(connectionString, config) : drizzleNeon(connectionString);
 	}
 
 	return dbClient;
