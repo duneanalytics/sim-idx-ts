@@ -1,9 +1,7 @@
 import * as drizzle_orm_pg_core from 'drizzle-orm/pg-core';
 import * as drizzle_orm_node_postgres from 'drizzle-orm/node-postgres';
-import { drizzle as drizzle$1 } from 'drizzle-orm/node-postgres';
 import * as _neondatabase_serverless from '@neondatabase/serverless';
 import * as drizzle_orm_neon_http from 'drizzle-orm/neon-http';
-import { drizzle } from 'drizzle-orm/neon-http';
 import { DrizzleConfig } from 'drizzle-orm';
 import { Context, Hono } from 'hono';
 import { Pool } from 'pg';
@@ -53,7 +51,6 @@ interface ClientBindings {
     DB_CONNECTION_STRING?: string;
 }
 interface DbContext {
-    __drizzleClients: Map<string, ReturnType<typeof drizzle | typeof drizzle$1>>;
     __pools: Map<string, Pool>;
 }
 declare const client: <T extends {

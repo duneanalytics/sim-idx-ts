@@ -50,7 +50,6 @@ interface ClientBindings {
 }
 
 interface DbContext {
-	__drizzleClients: Map<string, ReturnType<typeof drizzleNeon | typeof drizzlePostgres>>;
 	__pools: Map<string, Pool>;
 }
 
@@ -69,23 +68,11 @@ export const client = <T extends { Bindings: ClientBindings }>(
 
 	// TODO: this is a bit hacky, but cloudflare workers does not seem to have a better way of interacting with state across the request.
 	// We keep the drizzle clients and pools in the context so that we can reuse them across the same request and so that they are cleanup by the garbage collector
-	let drizzleClients = c.__drizzleClients;
-	if (!drizzleClients) {
-		drizzleClients = new Map();
-		c.__drizzleClients = drizzleClients;
-	}
 	let pools = c.__pools;
 	if (!pools) {
 		pools = new Map();
 		c.__pools = pools;
 	}
-
-	// Check if we already have a client for this connection string
-	const existingClient = drizzleClients.get(connectionString);
-	if (existingClient) {
-		return existingClient;
-	}
-
 	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 	const searchPath = extractSearchPathFromConnectionString(connectionString);
 
@@ -93,6 +80,8 @@ export const client = <T extends { Bindings: ClientBindings }>(
 		// Reuse existing pool or create new one
 		let pool = pools.get(connectionString);
 		if (!pool) {
+			// Set to 4 because of the limit of the cloudflare workers and allow some room for other connections
+			// https://developers.cloudflare.com/workers/platform/limits/#simultaneous-open-connections
 			pool = new Pool({ connectionString, max: 4 });
 			pool.on('connect', (client) => {
 				client.query(`SET search_path TO ${searchPath}`).catch((error) => {
@@ -109,7 +98,6 @@ export const client = <T extends { Bindings: ClientBindings }>(
 		dbClient = config ? drizzleNeon(connectionString, config) : drizzleNeon(connectionString);
 	}
 
-	drizzleClients.set(connectionString, dbClient);
 	return dbClient;
 };
 

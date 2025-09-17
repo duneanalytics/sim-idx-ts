@@ -182,19 +182,10 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
-  let drizzleClients = c.__drizzleClients;
-  if (!drizzleClients) {
-    drizzleClients = /* @__PURE__ */ new Map();
-    c.__drizzleClients = drizzleClients;
-  }
   let pools = c.__pools;
   if (!pools) {
     pools = /* @__PURE__ */ new Map();
     c.__pools = pools;
-  }
-  const existingClient = drizzleClients.get(connectionString);
-  if (existingClient) {
-    return existingClient;
   }
   let dbClient;
   const searchPath = extractSearchPathFromConnectionString(connectionString);
@@ -215,7 +206,6 @@ var client = (c, config) => {
   } else {
     dbClient = config ? drizzleNeon(connectionString, config) : drizzleNeon(connectionString);
   }
-  drizzleClients.set(connectionString, dbClient);
   return dbClient;
 };
 var address = customType({
