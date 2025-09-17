@@ -49,18 +49,15 @@ interface ClientBindings {
 	DB_CONNECTION_STRING?: string;
 }
 
-const pools = new Map<string, Pool>();
-const drizzleClients = new Map<string, ReturnType<typeof drizzleNeon | typeof drizzlePostgres>>();
-
-export async function cleanup() {
-	for (const pool of pools.values()) {
-		await pool.end();
-	}
-	pools.clear();
-	drizzleClients.clear();
+interface DbContext {
+	__drizzleClients: Map<string, ReturnType<typeof drizzleNeon | typeof drizzlePostgres>>;
+	__pools: Map<string, Pool>;
 }
 
-export function client<T extends { Bindings: ClientBindings }>(c: Context<T> | { env: ClientBindings }, config?: DrizzleConfig) {
+export function client<T extends { Bindings: ClientBindings }>(
+	c: (Context<T> | { env: ClientBindings }) & Partial<DbContext>,
+	config?: DrizzleConfig,
+) {
 	if (!c.env.DB_CONNECTION_STRING) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
@@ -68,6 +65,17 @@ export function client<T extends { Bindings: ClientBindings }>(c: Context<T> | {
 	let connectionString = c.env.DB_CONNECTION_STRING;
 	if (c.env.HYPERDRIVE?.connectionString) {
 		connectionString = c.env.HYPERDRIVE.connectionString;
+	}
+
+	let drizzleClients = c.__drizzleClients;
+	if (!drizzleClients) {
+		drizzleClients = new Map();
+		c.__drizzleClients = drizzleClients;
+	}
+	let pools = c.__pools;
+	if (!pools) {
+		pools = new Map();
+		c.__pools = pools;
 	}
 
 	// Check if we already have a client for this connection string

@@ -41,7 +41,6 @@ __export(db_exports, {
   bytes7: () => bytes7,
   bytes8: () => bytes8,
   bytes9: () => bytes9,
-  cleanup: () => cleanup,
   client: () => client,
   extractSearchPathFromConnectionString: () => extractSearchPathFromConnectionString,
   int104: () => int104,
@@ -175,15 +174,6 @@ function extractSearchPathFromConnectionString(connectionString) {
   }
   return null;
 }
-var pools = /* @__PURE__ */ new Map();
-var drizzleClients = /* @__PURE__ */ new Map();
-async function cleanup() {
-  for (const pool of pools.values()) {
-    await pool.end();
-  }
-  pools.clear();
-  drizzleClients.clear();
-}
 function client(c, config) {
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
@@ -191,6 +181,16 @@ function client(c, config) {
   let connectionString = c.env.DB_CONNECTION_STRING;
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
+  }
+  let drizzleClients = c.__drizzleClients;
+  if (!drizzleClients) {
+    drizzleClients = /* @__PURE__ */ new Map();
+    c.__drizzleClients = drizzleClients;
+  }
+  let pools = c.__pools;
+  if (!pools) {
+    pools = /* @__PURE__ */ new Map();
+    c.__pools = pools;
   }
   const existingClient = drizzleClients.get(connectionString);
   if (existingClient) {
