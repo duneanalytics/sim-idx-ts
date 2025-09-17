@@ -197,7 +197,7 @@ function extractSearchPathFromConnectionString(connectionString) {
   }
   return null;
 }
-function client(c, config) {
+var client = (c, config) => {
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
@@ -240,7 +240,7 @@ function client(c, config) {
   }
   drizzleClients.set(connectionString, dbClient);
   return dbClient;
-}
+};
 var address = (0, import_pg_core.customType)({
   dataType() {
     return "bytea";

@@ -56,11 +56,11 @@ interface DbContext {
     __drizzleClients: Map<string, ReturnType<typeof drizzle | typeof drizzle$1>>;
     __pools: Map<string, Pool>;
 }
-declare function client<T extends {
+declare const client: <T extends {
     Bindings: ClientBindings;
 }>(c: (Context<T> | {
     env: ClientBindings;
-}) & Partial<DbContext>, config?: DrizzleConfig): (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
+}) & Partial<DbContext>, config?: DrizzleConfig) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
     $client: _neondatabase_serverless.NeonQueryFunction<any, any>;
 }) | (drizzle_orm_node_postgres.NodePgDatabase<Record<string, unknown>> & {
     $client: drizzle_orm_node_postgres.NodePgClient;

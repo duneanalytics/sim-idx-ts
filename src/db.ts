@@ -54,10 +54,10 @@ interface DbContext {
 	__pools: Map<string, Pool>;
 }
 
-export function client<T extends { Bindings: ClientBindings }>(
+export const client =<T extends { Bindings: ClientBindings }>(
 	c: (Context<T> | { env: ClientBindings }) & Partial<DbContext>,
 	config?: DrizzleConfig,
-) {
+) => {
 	if (!c.env.DB_CONNECTION_STRING) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
@@ -67,6 +67,8 @@ export function client<T extends { Bindings: ClientBindings }>(
 		connectionString = c.env.HYPERDRIVE.connectionString;
 	}
 
+	// TODO: this is a bit hacky, but cloudflare workers does not seem to have a better way of interacting with state across the request.
+	// We keep the drizzle clients and pools in the context so that we can reuse them across the same request and so that they are cleanup by the garbage collector
 	let drizzleClients = c.__drizzleClients;
 	if (!drizzleClients) {
 		drizzleClients = new Map();
