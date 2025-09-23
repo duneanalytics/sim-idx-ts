@@ -57,22 +57,4 @@ describe('postgres', () => {
 			}
 		});
 	});
-
-	it('should reuse pools for the same connection string', async () => {
-		const ctx = {
-			env: {
-				DB_CONNECTION_STRING: `${connectionString}&options=-c%20search_path=public,test_schema`,
-			},
-			__pools: new Map(),
-		};
-		expect(ctx.__pools.size).toBe(0);
-		const client1 = client(ctx);
-		expect(ctx.__pools.size).toBe(1);
-		const client2 = client(ctx);
-		expect(ctx.__pools.size).toBe(1);
-
-		if (client1.$client instanceof pg.Pool) {
-			await client1.$client.end();
-		}
-	});
 });

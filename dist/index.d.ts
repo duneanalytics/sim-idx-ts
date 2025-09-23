@@ -53,9 +53,9 @@ interface ClientBindings {
 }
 declare const client: <T extends {
     Bindings: ClientBindings;
-}>(c: (Context<T> | {
+}>(c: Context<T> | {
     env: ClientBindings;
-}), config?: DrizzleConfig) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
+}, config?: DrizzleConfig) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
     $client: _neondatabase_serverless.NeonQueryFunction<any, any>;
 }) | (drizzle_orm_node_postgres.NodePgDatabase<Record<string, unknown>> & {
     $client: drizzle_orm_node_postgres.NodePgClient;
