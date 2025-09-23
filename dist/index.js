@@ -88,6 +88,7 @@ __export(db_exports, {
   int88: () => int88,
   int96: () => int96,
   struct: () => struct,
+  table: () => table,
   uint104: () => uint104,
   uint112: () => uint112,
   uint120: () => uint120,
@@ -205,32 +206,26 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
-  let pools = c.__pools;
-  if (!pools) {
-    pools = /* @__PURE__ */ new Map();
-    c.__pools = pools;
-  }
   let dbClient;
-  const searchPath = extractSearchPathFromConnectionString(connectionString);
-  if (searchPath) {
-    let pool = pools.get(connectionString);
-    if (!pool) {
-      pool = new import_pg.Pool({ connectionString, max: 4 });
-      pool.on("connect", (client2) => {
-        client2.query(`SET search_path TO ${searchPath}`).catch((error) => {
-          console.error("Failed to set search_path", error);
-        });
-      });
-      pools.set(connectionString, pool);
-    }
-    dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
-  } else if (c.env.HYPERDRIVE?.connectionString) {
+  if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = config ? (0, import_node_postgres.drizzle)(connectionString, config) : (0, import_node_postgres.drizzle)(connectionString);
   } else {
     dbClient = config ? (0, import_neon_http.drizzle)(connectionString, config) : (0, import_neon_http.drizzle)(connectionString);
   }
   return dbClient;
 };
+function table(tableName, columns) {
+  const connectionString = process.env.DB_CONNECTION_STRING;
+  if (!connectionString) {
+    throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
+  }
+  const searchPath = extractSearchPathFromConnectionString(connectionString);
+  if (searchPath) {
+    return (0, import_pg_core.pgSchema)(searchPath).table(tableName, columns);
+  } else {
+    return (0, import_pg_core.pgTable)(tableName, columns);
+  }
+}
 var address = (0, import_pg_core.customType)({
   dataType() {
     return "bytea";
