@@ -150,7 +150,7 @@ var Int = class {
 };
 
 // src/db.ts
-import { Pool } from "@neondatabase/serverless";
+import { neon } from "@neondatabase/serverless";
 function extractSearchPathFromConnectionStringRaw(connectionString) {
   if (!URL.canParse(connectionString)) {
     return null;
@@ -190,20 +190,11 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
-  let pools = c.__pools;
-  if (!pools) {
-    pools = /* @__PURE__ */ new Map();
-    c.__pools = pools;
-  }
   let dbClient;
   const searchPath = extractSchemaFromConnectionString(connectionString);
   if (searchPath) {
-    let pool = pools.get(connectionString);
-    if (!pool) {
-      pool = new Pool({ connectionString, max: 4 });
-      pools.set(connectionString, pool);
-    }
-    dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
+    const client2 = neon(connectionString);
+    dbClient = config ? drizzleNeon(client2, config) : drizzleNeon(client2);
   } else if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
   } else {

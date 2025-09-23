@@ -213,20 +213,11 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
-  let pools = c.__pools;
-  if (!pools) {
-    pools = /* @__PURE__ */ new Map();
-    c.__pools = pools;
-  }
   let dbClient;
   const searchPath = extractSchemaFromConnectionString(connectionString);
   if (searchPath) {
-    let pool = pools.get(connectionString);
-    if (!pool) {
-      pool = new import_serverless.Pool({ connectionString, max: 4 });
-      pools.set(connectionString, pool);
-    }
-    dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
+    const client2 = (0, import_serverless.neon)(connectionString);
+    dbClient = config ? (0, import_neon_http.drizzle)(client2, config) : (0, import_neon_http.drizzle)(client2);
   } else if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = config ? (0, import_node_postgres.drizzle)(connectionString, config) : (0, import_node_postgres.drizzle)(connectionString);
   } else {

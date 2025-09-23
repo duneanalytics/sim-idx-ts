@@ -5,7 +5,7 @@ import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
 import { type DrizzleConfig } from 'drizzle-orm';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
-import { Pool } from '@neondatabase/serverless';
+import { neon } from '@neondatabase/serverless';
 
 function extractSearchPathFromConnectionStringRaw(connectionString: string): string[] | null {
 	if (!URL.canParse(connectionString)) {
@@ -56,14 +56,7 @@ interface ClientBindings {
 	DB_CONNECTION_STRING?: string;
 }
 
-interface DbContext {
-	__pools: Map<string, Pool>;
-}
-
-export const client = <T extends { Bindings: ClientBindings }>(
-	c: (Context<T> | { env: ClientBindings }) & Partial<DbContext>,
-	config?: DrizzleConfig,
-) => {
+export const client = <T extends { Bindings: ClientBindings }>(c: Context<T> | { env: ClientBindings }, config?: DrizzleConfig) => {
 	if (!c.env.DB_CONNECTION_STRING) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
@@ -73,26 +66,12 @@ export const client = <T extends { Bindings: ClientBindings }>(
 		connectionString = c.env.HYPERDRIVE.connectionString;
 	}
 
-	// TODO: this is a bit hacky, but cloudflare workers does not seem to have a better way of interacting with state across the request.
-	// We keep the drizzle clients and pools in the context so that we can reuse them across the same request and so that they are cleanup by the garbage collector
-	let pools = c.__pools;
-	if (!pools) {
-		pools = new Map();
-		c.__pools = pools;
-	}
 	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 	const searchPath = extractSchemaFromConnectionString(connectionString);
 
 	if (searchPath) {
-		// Reuse existing pool or create new one
-		let pool = pools.get(connectionString);
-		if (!pool) {
-			// Set to 4 because of the limit of the cloudflare workers and allow some room for other connections
-			// https://developers.cloudflare.com/workers/platform/limits/#simultaneous-open-connections
-			pool = new Pool({ connectionString, max: 4 });
-			pools.set(connectionString, pool);
-		}
-		dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
+		const client = neon(connectionString);
+		dbClient = config ? drizzleNeon(client, config) : drizzleNeon(client);
 	} else if (c.env.HYPERDRIVE?.connectionString) {
 		dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
 	} else {

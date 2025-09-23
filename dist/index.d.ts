@@ -4,7 +4,6 @@ import * as drizzle_orm from 'drizzle-orm';
 import { DrizzleConfig } from 'drizzle-orm';
 import * as drizzle_orm_node_postgres from 'drizzle-orm/node-postgres';
 import * as _neondatabase_serverless from '@neondatabase/serverless';
-import { Pool } from '@neondatabase/serverless';
 import * as drizzle_orm_neon_http from 'drizzle-orm/neon-http';
 import { Context, Hono } from 'hono';
 import * as hono_types from 'hono/types';
@@ -52,14 +51,11 @@ interface ClientBindings {
     };
     DB_CONNECTION_STRING?: string;
 }
-interface DbContext {
-    __pools: Map<string, Pool>;
-}
 declare const client: <T extends {
     Bindings: ClientBindings;
 }>(c: (Context<T> | {
     env: ClientBindings;
-}) & Partial<DbContext>, config?: DrizzleConfig) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
+}), config?: DrizzleConfig) => (drizzle_orm_neon_http.NeonHttpDatabase<Record<string, unknown>> & {
     $client: _neondatabase_serverless.NeonQueryFunction<any, any>;
 }) | (drizzle_orm_node_postgres.NodePgDatabase<Record<string, unknown>> & {
     $client: drizzle_orm_node_postgres.NodePgClient;
