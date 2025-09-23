@@ -151,6 +151,7 @@ var Int = class {
 
 // src/db.ts
 import { escapeIdentifier } from "pg";
+import { Pool } from "@neondatabase/serverless";
 function extractSearchPathFromConnectionString(connectionString) {
   if (!URL.canParse(connectionString)) {
     return null;
@@ -183,8 +184,21 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
+  let pools = c.__pools;
+  if (!pools) {
+    pools = /* @__PURE__ */ new Map();
+    c.__pools = pools;
+  }
   let dbClient;
-  if (c.env.HYPERDRIVE?.connectionString) {
+  const searchPath = extractSearchPathFromConnectionString(connectionString);
+  if (searchPath) {
+    let pool = pools.get(connectionString);
+    if (!pool) {
+      pool = new Pool({ connectionString, max: 4 });
+      pools.set(connectionString, pool);
+    }
+    dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
+  } else if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
   } else {
     dbClient = config ? drizzleNeon(connectionString, config) : drizzleNeon(connectionString);

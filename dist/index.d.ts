@@ -4,9 +4,9 @@ import * as drizzle_orm from 'drizzle-orm';
 import { DrizzleConfig } from 'drizzle-orm';
 import * as drizzle_orm_node_postgres from 'drizzle-orm/node-postgres';
 import * as _neondatabase_serverless from '@neondatabase/serverless';
+import { Pool } from '@neondatabase/serverless';
 import * as drizzle_orm_neon_http from 'drizzle-orm/neon-http';
 import { Context, Hono } from 'hono';
-import { Pool } from 'pg';
 import * as hono_types from 'hono/types';
 import { HonoOptions } from 'hono/hono-base';
 

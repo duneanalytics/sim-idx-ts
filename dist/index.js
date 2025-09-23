@@ -174,6 +174,7 @@ var Int = class {
 
 // src/db.ts
 var import_pg = require("pg");
+var import_serverless = require("@neondatabase/serverless");
 function extractSearchPathFromConnectionString(connectionString) {
   if (!URL.canParse(connectionString)) {
     return null;
@@ -206,8 +207,21 @@ var client = (c, config) => {
   if (c.env.HYPERDRIVE?.connectionString) {
     connectionString = c.env.HYPERDRIVE.connectionString;
   }
+  let pools = c.__pools;
+  if (!pools) {
+    pools = /* @__PURE__ */ new Map();
+    c.__pools = pools;
+  }
   let dbClient;
-  if (c.env.HYPERDRIVE?.connectionString) {
+  const searchPath = extractSearchPathFromConnectionString(connectionString);
+  if (searchPath) {
+    let pool = pools.get(connectionString);
+    if (!pool) {
+      pool = new import_serverless.Pool({ connectionString, max: 4 });
+      pools.set(connectionString, pool);
+    }
+    dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
+  } else if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = config ? (0, import_node_postgres.drizzle)(connectionString, config) : (0, import_node_postgres.drizzle)(connectionString);
   } else {
     dbClient = config ? (0, import_neon_http.drizzle)(connectionString, config) : (0, import_neon_http.drizzle)(connectionString);
