@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Address, Bytes } from './types';
-import { extractSearchPathFromConnectionString } from './db';
+import { extractSchemaFromConnectionString } from './db';
 
 describe('Database Types', () => {
 	describe('Address integration', () => {
@@ -73,54 +73,44 @@ describe('Database Types', () => {
 	});
 });
 
-describe('extractSearchPathFromConnectionString', () => {
+describe('extractSchemaFromConnectionString', () => {
 	it('should extract search_path from connection string with URL encoded options and escape identifiers', () => {
 		const connectionString =
 			'postgres://user:pass@ep-dawn-river-a4csbovg.us-east-1.aws.neon.tech/his-in-fHWG49c05k?sslmode=require&options=-c%20search_path%3D%22which-those-cDvpxOl74o%22%2Cpublic';
-		const result = extractSearchPathFromConnectionString(connectionString);
-		expect(result).toBe('"which-those-cDvpxOl74o","public"');
+		const result = extractSchemaFromConnectionString(connectionString);
+		expect(result).toBe('which-those-cDvpxOl74o');
 	});
 
 	it('should extract search_path from connection string with multiple schemas and escape identifiers', () => {
 		const connectionString = 'postgres://user:pass@host/db?options=-c%20search_path%3D%22schema1%22%2Cschema2%2Cpublic';
-		const result = extractSearchPathFromConnectionString(connectionString);
-		expect(result).toBe('"schema1","schema2","public"');
+		expect(() => extractSchemaFromConnectionString(connectionString)).toThrow('Multiple schemas found in connection string');
 	});
 
 	it('should return null when no options parameter exists', () => {
 		const connectionString = 'postgres://user:pass@host/db?sslmode=require';
-		const result = extractSearchPathFromConnectionString(connectionString);
+		const result = extractSchemaFromConnectionString(connectionString);
 		expect(result).toBeNull();
 	});
 
 	it('should return null when options parameter exists but has no search_path', () => {
 		const connectionString = 'postgres://user:pass@host/db?options=-c%20some_other_setting%3Dvalue';
-		const result = extractSearchPathFromConnectionString(connectionString);
+		const result = extractSchemaFromConnectionString(connectionString);
 		expect(result).toBeNull();
 	});
 
 	it('should return null for invalid connection strings', () => {
 		const invalidConnectionString = 'invalid-connection-string';
-		const result = extractSearchPathFromConnectionString(invalidConnectionString);
+		const result = extractSchemaFromConnectionString(invalidConnectionString);
 		expect(result).toBeNull();
 	});
-
-	it('should handle connection string without search_path quotes and escape identifiers', () => {
-		const connectionString = 'postgres://user:pass@host/db?options=-c%20search_path%3Dschema1%2Cpublic';
-		const result = extractSearchPathFromConnectionString(connectionString);
-		expect(result).toBe('"schema1","public"');
-	});
-
 	it('should handle schemas with sql injection', () => {
 		const connectionString =
 			'postgres://user:pass@host/db?options=-c%20search_path%3D%22schema;drop table users;%22%2C%22schema%20with%20space%22%2Cpublic';
-		const result = extractSearchPathFromConnectionString(connectionString);
-		expect(result).toBe('"schema;drop table users;","schema with space","public"');
+		expect(() => extractSchemaFromConnectionString(connectionString)).toThrow('Multiple schemas found in connection string');
 	});
 
 	it('should handle mixed quoted and unquoted schemas', () => {
 		const connectionString = 'postgres://user:pass@host/db?options=-c%20search_path%3D%22quoted_schema%22%2Cunquoted_schema%2Cpublic';
-		const result = extractSearchPathFromConnectionString(connectionString);
-		expect(result).toBe('"quoted_schema","unquoted_schema","public"');
+		expect(() => extractSchemaFromConnectionString(connectionString)).toThrow('Multiple schemas found in connection string');
 	});
 });

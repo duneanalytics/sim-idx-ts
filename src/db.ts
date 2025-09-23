@@ -5,10 +5,9 @@ import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
 import { type DrizzleConfig } from 'drizzle-orm';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
-import { escapeIdentifier } from 'pg';
 import { Pool } from '@neondatabase/serverless';
 
-export function extractSearchPathFromConnectionString(connectionString: string): string | null {
+function extractSearchPathFromConnectionStringRaw(connectionString: string): string[] | null {
 	if (!URL.canParse(connectionString)) {
 		return null;
 	}
@@ -33,14 +32,21 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 			const trimmed = schema.trim();
 			// Remove quotes if they exist
 			const unquoted = trimmed.replace(/^"(.*)"$/, '$1');
-			// Escape the identifier
-			return escapeIdentifier(unquoted);
+			return unquoted;
 		});
 
-		return schemas.join(',');
+		return schemas;
 	}
 
 	return null;
+}
+
+export function extractSchemaFromConnectionString(connectionString: string): string | null {
+	const schemas = extractSearchPathFromConnectionStringRaw(connectionString)?.filter((schema) => schema !== 'public');
+	if (schemas && schemas?.length > 1) {
+		throw new Error('Multiple schemas found in connection string');
+	}
+	return schemas?.[0] ?? null;
 }
 
 interface ClientBindings {
@@ -75,7 +81,7 @@ export const client = <T extends { Bindings: ClientBindings }>(
 		c.__pools = pools;
 	}
 	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
-	const searchPath = extractSearchPathFromConnectionString(connectionString);
+	const searchPath = extractSchemaFromConnectionString(connectionString);
 
 	if (searchPath) {
 		// Reuse existing pool or create new one
@@ -100,9 +106,9 @@ export function table(tableName: string, columns: Record<string, PgColumnBuilder
 	if (!connectionString) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
-	const searchPath = extractSearchPathFromConnectionString(connectionString)?.split(',').shift()?.trim().replace(/"/g, '');
-	if (searchPath) {
-		return pgSchema(searchPath).table(tableName, columns);
+	const schema = extractSchemaFromConnectionString(connectionString);
+	if (schema) {
+		return pgSchema(schema).table(tableName, columns);
 	} else {
 		return pgTable(tableName, columns);
 	}

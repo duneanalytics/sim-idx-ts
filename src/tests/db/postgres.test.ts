@@ -61,7 +61,7 @@ describe('postgres', () => {
 	it('should reuse pools for the same connection string', async () => {
 		const ctx = {
 			env: {
-				DB_CONNECTION_STRING: `${connectionString}&options=-c%20search_path=public`,
+				DB_CONNECTION_STRING: `${connectionString}&options=-c%20search_path=public,test_schema`,
 			},
 			__pools: new Map(),
 		};

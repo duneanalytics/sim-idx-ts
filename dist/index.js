@@ -65,7 +65,7 @@ __export(db_exports, {
   bytes8: () => bytes8,
   bytes9: () => bytes9,
   client: () => client,
-  extractSearchPathFromConnectionString: () => extractSearchPathFromConnectionString,
+  extractSchemaFromConnectionString: () => extractSchemaFromConnectionString,
   int104: () => int104,
   int112: () => int112,
   int120: () => int120,
@@ -173,9 +173,8 @@ var Int = class {
 };
 
 // src/db.ts
-var import_pg = require("pg");
 var import_serverless = require("@neondatabase/serverless");
-function extractSearchPathFromConnectionString(connectionString) {
+function extractSearchPathFromConnectionStringRaw(connectionString) {
   if (!URL.canParse(connectionString)) {
     return null;
   }
@@ -193,11 +192,18 @@ function extractSearchPathFromConnectionString(connectionString) {
     const schemas = rawSearchPath.split(",").map((schema) => {
       const trimmed = schema.trim();
       const unquoted = trimmed.replace(/^"(.*)"$/, "$1");
-      return (0, import_pg.escapeIdentifier)(unquoted);
+      return unquoted;
     });
-    return schemas.join(",");
+    return schemas;
   }
   return null;
+}
+function extractSchemaFromConnectionString(connectionString) {
+  const schemas = extractSearchPathFromConnectionStringRaw(connectionString)?.filter((schema) => schema !== "public");
+  if (schemas && schemas?.length > 1) {
+    throw new Error("Multiple schemas found in connection string");
+  }
+  return schemas?.[0] ?? null;
 }
 var client = (c, config) => {
   if (!c.env.DB_CONNECTION_STRING) {
@@ -213,7 +219,7 @@ var client = (c, config) => {
     c.__pools = pools;
   }
   let dbClient;
-  const searchPath = extractSearchPathFromConnectionString(connectionString);
+  const searchPath = extractSchemaFromConnectionString(connectionString);
   if (searchPath) {
     let pool = pools.get(connectionString);
     if (!pool) {
@@ -233,9 +239,9 @@ function table(tableName, columns) {
   if (!connectionString) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
-  const searchPath = extractSearchPathFromConnectionString(connectionString)?.split(",").shift()?.trim().replace(/"/g, "");
-  if (searchPath) {
-    return (0, import_pg_core.pgSchema)(searchPath).table(tableName, columns);
+  const schema = extractSchemaFromConnectionString(connectionString);
+  if (schema) {
+    return (0, import_pg_core.pgSchema)(schema).table(tableName, columns);
   } else {
     return (0, import_pg_core.pgTable)(tableName, columns);
   }
