@@ -233,7 +233,7 @@ function table(tableName, columns) {
   if (!connectionString) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
   }
-  const searchPath = extractSearchPathFromConnectionString(connectionString);
+  const searchPath = extractSearchPathFromConnectionString(connectionString)?.split(",").shift()?.trim().replace(/"/g, "");
   if (searchPath) {
     return (0, import_pg_core.pgSchema)(searchPath).table(tableName, columns);
   } else {

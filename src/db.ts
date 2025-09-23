@@ -100,7 +100,7 @@ export function table(tableName: string, columns: Record<string, PgColumnBuilder
 	if (!connectionString) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
 	}
-	const searchPath = extractSearchPathFromConnectionString(connectionString);
+	const searchPath = extractSearchPathFromConnectionString(connectionString)?.split(',').shift()?.trim().replace(/"/g, '');
 	if (searchPath) {
 		return pgSchema(searchPath).table(tableName, columns);
 	} else {
