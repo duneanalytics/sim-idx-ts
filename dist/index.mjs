@@ -65,6 +65,7 @@ __export(db_exports, {
   int88: () => int88,
   int96: () => int96,
   struct: () => struct,
+  table: () => table,
   uint104: () => uint104,
   uint112: () => uint112,
   uint120: () => uint120,
@@ -87,7 +88,7 @@ __export(db_exports, {
   uint88: () => uint88,
   uint96: () => uint96
 });
-import { customType } from "drizzle-orm/pg-core";
+import { customType, pgSchema, pgTable } from "drizzle-orm/pg-core";
 import { drizzle as drizzleNeon } from "drizzle-orm/neon-http";
 import { drizzle as drizzlePostgres } from "drizzle-orm/node-postgres";
 
@@ -150,6 +151,13 @@ var Int = class {
 
 // src/db.ts
 import { Pool, escapeIdentifier } from "pg";
+function table(name, columns, extras) {
+  if (process.env.DB_SCHEMA_NAME) {
+    return pgSchema(process.env.DB_SCHEMA_NAME).table(name, columns, extras);
+  } else {
+    return pgTable(name, columns, extras);
+  }
+}
 function extractSearchPathFromConnectionString(connectionString) {
   if (!URL.canParse(connectionString)) {
     return null;
@@ -177,6 +185,9 @@ function extractSearchPathFromConnectionString(connectionString) {
 var client = (c, config) => {
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
+  }
+  if (!c.env.DB_SCHEMA_NAME || !process.env.DB_SCHEMA_NAME) {
+    throw new Error("Missing required environment variable: DB_SCHEMA_NAME");
   }
   let connectionString = c.env.DB_CONNECTION_STRING;
   if (c.env.HYPERDRIVE?.connectionString) {
@@ -379,6 +390,7 @@ export {
   app_exports as App,
   db_exports as db,
   middlewares_exports as middlewares,
+  table,
   types_exports as types
 };
 //# sourceMappingURL=index.mjs.map

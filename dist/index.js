@@ -23,6 +23,7 @@ __export(index_exports, {
   App: () => app_exports,
   db: () => db_exports,
   middlewares: () => middlewares_exports,
+  table: () => table,
   types: () => types_exports
 });
 module.exports = __toCommonJS(index_exports);
@@ -88,6 +89,7 @@ __export(db_exports, {
   int88: () => int88,
   int96: () => int96,
   struct: () => struct,
+  table: () => table,
   uint104: () => uint104,
   uint112: () => uint112,
   uint120: () => uint120,
@@ -173,6 +175,13 @@ var Int = class {
 
 // src/db.ts
 var import_pg = require("pg");
+function table(name, columns, extras) {
+  if (process.env.DB_SCHEMA_NAME) {
+    return (0, import_pg_core.pgSchema)(process.env.DB_SCHEMA_NAME).table(name, columns, extras);
+  } else {
+    return (0, import_pg_core.pgTable)(name, columns, extras);
+  }
+}
 function extractSearchPathFromConnectionString(connectionString) {
   if (!URL.canParse(connectionString)) {
     return null;
@@ -200,6 +209,9 @@ function extractSearchPathFromConnectionString(connectionString) {
 var client = (c, config) => {
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
+  }
+  if (!c.env.DB_SCHEMA_NAME || !process.env.DB_SCHEMA_NAME) {
+    throw new Error("Missing required environment variable: DB_SCHEMA_NAME");
   }
   let connectionString = c.env.DB_CONNECTION_STRING;
   if (c.env.HYPERDRIVE?.connectionString) {
@@ -403,6 +415,7 @@ var authentication = async (c, next) => {
   App,
   db,
   middlewares,
+  table,
   types
 });
 //# sourceMappingURL=index.js.map
