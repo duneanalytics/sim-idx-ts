@@ -3,6 +3,9 @@ import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
 import { client } from '../../db';
 import pg from 'pg';
 import { sql } from 'drizzle-orm';
+import { table } from '../../db';
+import * as t from 'drizzle-orm/pg-core';
+import { QueryBuilder, serial, text } from 'drizzle-orm/pg-core';
 
 describe('postgres', () => {
 	let db: PGlite;
@@ -73,6 +76,26 @@ describe('postgres', () => {
 			if (client1.$client instanceof pg.Pool) {
 				await client1.$client.end();
 			}
+		});
+
+		describe('table helper', () => {
+			it('should make fully qualified queries when DB_SCHEMA_NAME is set', () => {
+				const qb = new QueryBuilder();
+
+				process.env.DB_SCHEMA_NAME = 'schema';
+				const schemaUsersTable = table('users', {
+					id: t.serial('id').primaryKey(),
+					username: t.text('username'),
+				});
+				expect(qb.select().from(schemaUsersTable).toSQL().sql).toBe('select "id", "username" from "schema"."users"');
+
+				delete process.env.DB_SCHEMA_NAME;
+				const usersTable = table('users', {
+					id: t.serial('id').primaryKey(),
+					username: t.text('username'),
+				});
+				expect(qb.select().from(usersTable).toSQL().sql).toBe('select "id", "username" from "users"');
+			});
 		});
 	});
 });

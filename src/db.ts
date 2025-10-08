@@ -1,11 +1,28 @@
 // TODO: Extract to library
-import { customType } from 'drizzle-orm/pg-core';
+import { customType, PgColumnBuilderBase, pgSchema, pgTable, PgTableExtraConfigValue, PgTableWithColumns } from 'drizzle-orm/pg-core';
 import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http';
 import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres';
-import { type DrizzleConfig } from 'drizzle-orm';
 import { Address, Uint, Int, Bytes } from './types';
 import { Context } from 'hono';
 import { Pool, escapeIdentifier } from 'pg';
+import { BuildColumns, BuildExtraConfigColumns, type DrizzleConfig } from 'drizzle-orm';
+
+export function table<TColumnsMap extends Record<string, PgColumnBuilderBase>>(
+	name: string,
+	columns: TColumnsMap,
+	extras?: (self: BuildExtraConfigColumns<string, TColumnsMap, 'pg'>) => PgTableExtraConfigValue[],
+): PgTableWithColumns<{
+	name: string;
+	schema: string | undefined;
+	columns: BuildColumns<string, TColumnsMap, 'pg'>;
+	dialect: 'pg';
+}> {
+	if (process.env.DB_SCHEMA_NAME) {
+		return pgSchema(process.env.DB_SCHEMA_NAME).table(name, columns, extras);
+	} else {
+		return pgTable(name, columns, extras);
+	}
+}
 
 export function extractSearchPathFromConnectionString(connectionString: string): string | null {
 	if (!URL.canParse(connectionString)) {
@@ -47,6 +64,7 @@ interface ClientBindings {
 		connectionString: string;
 	};
 	DB_CONNECTION_STRING?: string;
+	DB_SCHEMA_NAME?: string;
 }
 
 interface DbContext {
@@ -59,6 +77,11 @@ export const client = <T extends { Bindings: ClientBindings }>(
 ) => {
 	if (!c.env.DB_CONNECTION_STRING) {
 		throw new Error('Missing required environment variable: DB_CONNECTION_STRING');
+	}
+
+	if (!c.env.DB_SCHEMA_NAME || !process.env.DB_SCHEMA_NAME) {
+		// TODO: enable this exception
+		// throw new Error('Missing required environment variable: DB_SCHEMA_NAME');
 	}
 
 	let connectionString = c.env.DB_CONNECTION_STRING;
