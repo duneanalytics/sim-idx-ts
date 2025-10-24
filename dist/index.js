@@ -206,6 +206,13 @@ function extractSearchPathFromConnectionString(connectionString) {
   }
   return null;
 }
+function getHostnameFromConnectionString(connectionString) {
+  if (!URL.canParse(connectionString)) {
+    return null;
+  }
+  const url = new URL(connectionString);
+  return url.hostname;
+}
 var client = (c, config) => {
   if (!c.env.DB_CONNECTION_STRING) {
     throw new Error("Missing required environment variable: DB_CONNECTION_STRING");
@@ -223,6 +230,7 @@ var client = (c, config) => {
   }
   let dbClient;
   const searchPath = extractSearchPathFromConnectionString(connectionString);
+  const hostname = getHostnameFromConnectionString(connectionString);
   if (searchPath) {
     let pool = pools.get(connectionString);
     if (!pool) {
@@ -237,8 +245,10 @@ var client = (c, config) => {
     dbClient = config ? (0, import_node_postgres.drizzle)(pool, config) : (0, import_node_postgres.drizzle)(pool);
   } else if (c.env.HYPERDRIVE?.connectionString) {
     dbClient = config ? (0, import_node_postgres.drizzle)(connectionString, config) : (0, import_node_postgres.drizzle)(connectionString);
-  } else {
+  } else if (hostname?.includes("neon.tech")) {
     dbClient = config ? (0, import_neon_http.drizzle)(connectionString, config) : (0, import_neon_http.drizzle)(connectionString);
+  } else {
+    dbClient = config ? (0, import_node_postgres.drizzle)(connectionString, config) : (0, import_node_postgres.drizzle)(connectionString);
   }
   return dbClient;
 };

@@ -59,6 +59,15 @@ export function extractSearchPathFromConnectionString(connectionString: string):
 	return null;
 }
 
+function getHostnameFromConnectionString(connectionString: string): string | null {
+	if (!URL.canParse(connectionString)) {
+		return null;
+	}
+
+	const url = new URL(connectionString);
+	return url.hostname;
+}
+
 interface ClientBindings {
 	HYPERDRIVE?: {
 		connectionString: string;
@@ -98,6 +107,7 @@ export const client = <T extends { Bindings: ClientBindings }>(
 	}
 	let dbClient: ReturnType<typeof drizzleNeon | typeof drizzlePostgres>;
 	const searchPath = extractSearchPathFromConnectionString(connectionString);
+	const hostname = getHostnameFromConnectionString(connectionString);
 
 	if (searchPath) {
 		// Reuse existing pool or create new one
@@ -117,8 +127,10 @@ export const client = <T extends { Bindings: ClientBindings }>(
 		dbClient = config ? drizzlePostgres(pool, config) : drizzlePostgres(pool);
 	} else if (c.env.HYPERDRIVE?.connectionString) {
 		dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
-	} else {
+	} else if (hostname?.includes('neon.tech')) {
 		dbClient = config ? drizzleNeon(connectionString, config) : drizzleNeon(connectionString);
+	} else {
+		dbClient = config ? drizzlePostgres(connectionString, config) : drizzlePostgres(connectionString);
 	}
 
 	return dbClient;
